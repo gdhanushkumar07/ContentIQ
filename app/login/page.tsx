@@ -10,7 +10,7 @@ import { Sparkles, Mail, Lock, ArrowRight, AlertCircle } from 'lucide-react'
 export default function LoginPage() {
   const router = useRouter()
   const [email, setEmail] = useState('demo@contentiq.ai')
-  const [password, setPassword] = useState('demo1234')
+  const [password, setPassword] = useState('abcdef')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 

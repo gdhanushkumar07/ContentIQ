@@ -126,11 +126,12 @@ body {
 .glass-card {
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-radius: 20px;
   position: relative;
   overflow: hidden;
+  will-change: transform, opacity;
   transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -211,8 +212,9 @@ body {
 .blob {
   position: absolute;
   border-radius: 50%;
-  filter: blur(80px);
+  filter: blur(60px);
   pointer-events: none;
+  will-change: transform;
   transition: opacity 0.3s ease;
 }
 :root:not(.dark) .blob { opacity: 0.35; }
@@ -259,10 +261,11 @@ body {
   justify-content: center;
   background: var(--stats-panel-bg);
   border: 1px solid var(--glass-border);
-  backdrop-filter: blur(24px);
+  backdrop-filter: blur(14px);
   border-radius: 20px;
   padding: 32px 56px;
   box-shadow: var(--stats-panel-shadow);
+  will-change: transform;
   transition: background 0.3s ease, box-shadow 0.3s ease;
 }
 .stat-item { text-align: center; padding: 0 48px; flex: 1; }

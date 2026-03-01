@@ -6,7 +6,7 @@ import bcrypt from 'bcryptjs'
 const USERS: Record<string, { id: string; name: string; email: string; hashedPassword: string }> = {}
 
 // Seed a demo user on startup
-const DEMO_HASH = bcrypt.hashSync('demo1234', 10)
+const DEMO_HASH = bcrypt.hashSync('abcdef', 10)
 USERS['demo@contentiq.ai'] = {
   id: 'demo-001',
   name: 'Demo User',

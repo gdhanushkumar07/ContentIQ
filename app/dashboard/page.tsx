@@ -10,33 +10,33 @@ import {
 import { TrendingUp, Zap, Eye, CheckCircle } from 'lucide-react'
 
 const STATS = [
-  { label: 'Videos Processed',    value: '1,284',  delta: '+12%', color: '#38BDF8' },
-  { label: 'Scripts Generated',   value: '347',    delta: '+8%',  color: '#8B5CF6' },
-  { label: 'Platforms Reached',   value: '40+',    delta: '',     color: '#10b981' },
-  { label: 'Avg. Engagement Lift',value: '3.2x',   delta: '+0.4x',color: '#f59e0b' },
+  { label: 'Videos Processed', value: '1,284', delta: '+12%', color: '#38BDF8' },
+  { label: 'Scripts Generated', value: '347', delta: '+8%', color: '#8B5CF6' },
+  { label: 'Platforms Reached', value: '40+', delta: '', color: '#10b981' },
+  { label: 'Avg. Engagement Lift', value: '3.2x', delta: '+0.4x', color: '#f59e0b' },
 ]
 
 const QUICK_LINKS = [
-  { label: 'Video Intelligence',  href: '/dashboard/video-intelligence',  icon: SparklesIcon,     color: '#38BDF8' },
-  { label: 'Script Generator',    href: '/dashboard/script-generator',    icon: DocumentTextIcon, color: '#8B5CF6' },
-  { label: 'Distribution',        href: '/dashboard/distribution',        icon: ShareIcon,        color: '#10b981' },
-  { label: 'Privacy Filter',      href: '/dashboard/privacy-filter',      icon: ShieldCheckIcon,  color: '#f59e0b' },
-  { label: 'Voice Tracker',       href: '/dashboard/voice-tracker',       icon: MicrophoneIcon,   color: '#f43f5e' },
-  { label: 'Multilingual Dubbing',href: '/dashboard/multilingual-dubbing',icon: GlobeAltIcon,     color: '#a855f7' },
-  { label: 'Thumbnail Analyzer',  href: '/dashboard/thumbnail-analyzer',  icon: PhotoIcon,        color: '#06b6d4' },
-  { label: 'BGM Suggestor',       href: '/dashboard/bgm-suggestor',       icon: MusicalNoteIcon,  color: '#ec4899' },
+  { label: 'Video Intelligence', href: '/dashboard/video-intelligence', icon: SparklesIcon, color: '#38BDF8' },
+  { label: 'Script Generator', href: '/dashboard/script-generator', icon: DocumentTextIcon, color: '#8B5CF6' },
+  { label: 'Distribution', href: '/dashboard/distribution', icon: ShareIcon, color: '#10b981' },
+  { label: 'Privacy Filter', href: '/dashboard/privacy-filter', icon: ShieldCheckIcon, color: '#f59e0b' },
+  { label: 'Voice Tracker', href: '/dashboard/voice-tracker', icon: MicrophoneIcon, color: '#f43f5e' },
+  { label: 'Multilingual Dubbing', href: '/dashboard/multilingual-dubbing', icon: GlobeAltIcon, color: '#a855f7' },
+  { label: 'Thumbnail Analyzer', href: '/dashboard/thumbnail-analyzer', icon: PhotoIcon, color: '#06b6d4' },
+  { label: 'BGM Suggestor', href: '/dashboard/bgm-suggestor', icon: MusicalNoteIcon, color: '#ec4899' },
 ]
 
 const RECENT_ACTIVITY = [
-  { action: 'Video analyzed',         subject: 'product-launch-v2.mp4', time: '2 min ago',  status: 'done' },
-  { action: 'Script generated',       subject: 'Tech Review — LinkedIn',time: '1 hr ago',   status: 'done' },
-  { action: 'Published to 8 platforms',subject: 'Behind the Scenes Reel',time: '3 hr ago',  status: 'done' },
-  { action: 'Privacy filter applied', subject: 'interview-raw.mp4',     time: 'Yesterday',  status: 'done' },
-  { action: 'BGM suggested',          subject: 'Product Walk-through',   time: 'Yesterday',  status: 'done' },
+  { action: 'Video analyzed', subject: 'product-launch-v2.mp4', time: '2 min ago', status: 'done' },
+  { action: 'Script generated', subject: 'Tech Review — LinkedIn', time: '1 hr ago', status: 'done' },
+  { action: 'Published to 8 platforms', subject: 'Behind the Scenes Reel', time: '3 hr ago', status: 'done' },
+  { action: 'Privacy filter applied', subject: 'interview-raw.mp4', time: 'Yesterday', status: 'done' },
+  { action: 'BGM suggested', subject: 'Product Walk-through', time: 'Yesterday', status: 'done' },
 ]
 
 function fadeUp(delay = 0) {
-  return { initial:{opacity:0,y:24}, animate:{opacity:1,y:0}, transition:{duration:0.5,delay,ease:[0.16,1,0.3,1] as const} }
+  return { initial: { opacity: 0, y: 24 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.5, delay, ease: [0.16, 1, 0.3, 1] as const } }
 }
 
 export default function DashboardPage() {
@@ -84,12 +84,13 @@ export default function DashboardPage() {
             <a key={item.href} href={item.href}>
               <motion.div
                 whileHover={{ y: -4, scale: 1.02 }}
-                transition={{ duration: 0.2 }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 25 }}
                 className="glass-card p-4 flex flex-col items-center gap-3 text-center cursor-pointer"
               >
                 <div className="w-11 h-11 rounded-xl flex items-center justify-center"
                   style={{ background: `${item.color}18`, border: `1px solid ${item.color}30` }}>
-                  <item.icon style={{ width:22, height:22, color: item.color }} />
+                  <item.icon style={{ width: 22, height: 22, color: item.color }} />
                 </div>
                 <span className="text-xs font-medium" style={{ color: 'rgba(255,255,255,0.75)' }}>{item.label}</span>
               </motion.div>
