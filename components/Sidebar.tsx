@@ -12,19 +12,21 @@ import {
   GlobeAltIcon,
   PhotoIcon,
   MusicalNoteIcon,
+  LanguageIcon,
 } from '@heroicons/react/24/outline'
 import { Sparkles } from 'lucide-react'
 
 const NAV_ITEMS = [
-  { label: 'Dashboard',            href: '/dashboard',                     icon: HomeIcon },
-  { label: 'Video Intelligence',   href: '/dashboard/video-intelligence',  icon: SparklesIcon },
-  { label: 'Script Generator',     href: '/dashboard/script-generator',    icon: DocumentTextIcon },
-  { label: 'Distribution',         href: '/dashboard/distribution',        icon: ShareIcon },
-  { label: 'Privacy Filter',       href: '/dashboard/privacy-filter',      icon: ShieldCheckIcon },
-  { label: 'Voice Tracker',        href: '/dashboard/voice-tracker',       icon: MicrophoneIcon },
+  { label: 'Dashboard', href: '/dashboard', icon: HomeIcon },
+  { label: 'Video Intelligence', href: '/dashboard/video-intelligence', icon: SparklesIcon },
+  { label: 'Script Generator', href: '/dashboard/script-generator', icon: DocumentTextIcon },
+  { label: 'Distribution', href: '/dashboard/distribution', icon: ShareIcon },
+  { label: 'Privacy Filter', href: '/dashboard/privacy-filter', icon: ShieldCheckIcon },
+  { label: 'Voice Tracker', href: '/dashboard/voice-tracker', icon: MicrophoneIcon },
   { label: 'Multilingual Dubbing', href: '/dashboard/multilingual-dubbing', icon: GlobeAltIcon },
-  { label: 'Thumbnail Analyzer',   href: '/dashboard/thumbnail-analyzer',  icon: PhotoIcon },
-  { label: 'BGM Suggestor',        href: '/dashboard/bgm-suggestor',       icon: MusicalNoteIcon },
+  { label: 'Universal Translator', href: '/dashboard/translator', icon: LanguageIcon },
+  { label: 'Thumbnail Analyzer', href: '/dashboard/thumbnail-analyzer', icon: PhotoIcon },
+  { label: 'BGM Suggestor', href: '/dashboard/bgm-suggestor', icon: MusicalNoteIcon },
 ]
 
 export default function Sidebar() {

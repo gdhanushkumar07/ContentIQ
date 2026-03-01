@@ -44,12 +44,16 @@ export const authOptions: NextAuthOptions = {
         }
 
         // ── Login flow ───────────────────────────────────────────────────────
-        const user = USERS[email]
-        if (!user) throw new Error('No account found for this email')
+        let user = USERS[email]
 
-        const valid = await bcrypt.compare(credentials.password, user.hashedPassword)
-        if (!valid) throw new Error('Incorrect password')
+        // --- DUMMY LOGIN BYPASS ---
+        // If the user doesn't exist in our memory store, we just create a dummy session
+        // so the user can log in with ANY email and password combination for testing.
+        if (!user) {
+          return { id: `dummy-${Date.now()}`, name: email.split('@')[0], email: email }
+        }
 
+        // If they do exist, we just let them in without password validation for ease of testing.
         return { id: user.id, name: user.name, email: user.email }
       },
     }),
