@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { NavBar } from '@/components/ui/tubelight-navbar'
 import HowItWorksTimeline from "@/components/sections/how-it-works-timeline";
+import ScrollFeatureCards from "@/components/sections/scroll-feature-cards";
 
 // ─── Grid Background ───────────────────────────────────────────────────────────
 function GridBackground() {
@@ -132,85 +133,7 @@ function HeroSection() {
   )
 }
 
-// ─── Bento Card ────────────────────────────────────────────────────────────────
-function BentoCard({ card, index }: { card: any; index: number }) {
-  const [hovered, setHovered] = useState(false)
-  return (
-    <motion.div className="glass-card"
-      initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-80px' }}
-      transition={{ duration: 0.6, delay: index * 0.12 }} whileHover={{ y: -8, scale: 1.02 }}
-      onHoverStart={() => setHovered(true)} onHoverEnd={() => setHovered(false)}
-      style={{ padding: 32, cursor: 'pointer', gridColumn: card.wide ? 'span 2' : 'span 1', minHeight: card.tall ? 340 : 280, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative', overflow: 'hidden' }}>
 
-      <AnimatePresence>
-        {hovered && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            style={{ position: 'absolute', inset: 0, background: `radial-gradient(circle at 50% 50%, ${card.glowColor}22 0%, transparent 70%)`, pointerEvents: 'none' }} />
-        )}
-      </AnimatePresence>
-
-      <div>
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20 }}>
-          <motion.div animate={{ rotate: hovered ? 360 : 0 }} transition={{ duration: 0.6 }}
-            style={{ width: 52, height: 52, borderRadius: 14, background: `linear-gradient(135deg, ${card.glowColor}33, ${card.glowColor}11)`, border: `1px solid ${card.glowColor}44`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <card.icon size={24} color={card.glowColor} />
-          </motion.div>
-          <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', color: card.glowColor, background: `${card.glowColor}15`, padding: '4px 12px', borderRadius: 100, border: `1px solid ${card.glowColor}30` }}>
-            {card.tag}
-          </span>
-        </div>
-        <h3 style={{ fontSize: 24, fontWeight: 700, letterSpacing: '-0.5px', marginBottom: 12 }}>{card.title}</h3>
-        <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', lineHeight: 1.7 }}>{card.description}</p>
-      </div>
-
-      <div style={{ marginTop: 24 }}>
-        <div className="progress-bar" style={{ width: `${card.progress}%`, marginBottom: 16 }} />
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {card.features.map((f: string) => (
-            <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <CheckCircle size={14} color={card.glowColor} />
-              <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)' }}>{f}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <motion.div animate={{ x: hovered ? 6 : 0 }}
-        style={{ position: 'absolute', bottom: 28, right: 28, width: 36, height: 36, borderRadius: '50%', background: `${card.glowColor}15`, border: `1px solid ${card.glowColor}30`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <ArrowRight size={16} color={card.glowColor} />
-      </motion.div>
-    </motion.div>
-  )
-}
-
-const BENTO_CARDS = [
-  { icon: Eye, title: 'Scene Intelligence', tag: 'Video Analysis', description: 'Deep frame-by-frame AI analysis identifies key scenes, objects, faces, and emotional arcs — automatically extracting your best moments.', glowColor: '#00d4ff', progress: 92, features: ['Multi-object detection', 'Emotion recognition', 'Auto highlight reel', 'Scene segmentation'], wide: true, tall: false },
-  { icon: Shield, title: 'Privacy-First Filtering', tag: 'Security & Authenticity', description: 'Enterprise-grade AI automatically blurs faces, removes sensitive content, and ensures GDPR compliance before any distribution.', glowColor: '#a855f7', progress: 98, features: ['Face anonymization', 'PII detection', 'GDPR compliant', 'Watermark removal'], wide: false, tall: false },
-  { icon: TrendingUp, title: 'Trend Prediction', tag: 'Viral Windows', description: 'Proprietary ML models analyze real-time social signals to forecast the optimal publish time and format for maximum virality across platforms.', glowColor: '#f59e0b', progress: 85, features: ['Real-time trend signals', 'Platform-specific timing', 'Hashtag intelligence', 'Engagement forecasting'], wide: false, tall: false },
-  { icon: Globe, title: 'Global Distribution', tag: 'Automated Publishing', description: 'One-click content deployment to 40+ platforms simultaneously — YouTube, Instagram, TikTok, LinkedIn — with auto-localized subtitles.', glowColor: '#10b981', progress: 78, features: ['40+ platforms', 'Auto-subtitles (50+ langs)', 'A/B testing', 'Analytics dashboard'], wide: true, tall: false },
-]
-
-function BentoSection() {
-  return (
-    <section id="features" style={{ padding: '120px 24px', position: 'relative', zIndex: 1, maxWidth: 1200, margin: '0 auto' }}>
-      <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }} style={{ textAlign: 'center', marginBottom: 80 }}>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.25)', borderRadius: 100, padding: '8px 20px', marginBottom: 24 }}>
-          <Zap size={14} color="#a855f7" />
-          <span style={{ fontSize: 13, fontWeight: 600, color: '#a855f7', letterSpacing: '0.5px' }}>CORE CAPABILITIES</span>
-        </div>
-        <h2 style={{ fontSize: 'clamp(32px, 5vw, 56px)', fontWeight: 800, letterSpacing: '-1.5px', marginBottom: 20 }}>
-          Everything you need to go <span className="gradient-text">viral</span>
-        </h2>
-        <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.5)', maxWidth: 560, margin: '0 auto', lineHeight: 1.7 }}>
-          Four powerful AI modules work in harmony to turn raw footage into globally distributed, engagement-maximized content.
-        </p>
-      </motion.div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
-        {BENTO_CARDS.map((card, i) => <BentoCard key={card.title} card={card} index={i} />)}
-      </div>
-    </section>
-  )
-}
 
 const TECH_STACK = [
   { name: 'AWS Lambda', sub: 'Serverless Compute', emoji: '⚡', glow: '#f59e0b' },
@@ -317,7 +240,7 @@ export default function HomePage() {
       <AmbientBlobs />
       <NavBar items={navItems} />
       <HeroSection />
-      <BentoSection />
+      <div id="features"><ScrollFeatureCards /></div>
       <HowItWorksTimeline />
       <TechStackSection />
       <FooterCTA />
