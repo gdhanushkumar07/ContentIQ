@@ -6,6 +6,7 @@ import {
   ChevronDown, ChevronUp, Mic, Brain, Target, BarChart2
 } from 'lucide-react'
 import { useRef, useState } from 'react'
+import { useVideoIntelligenceStore, startVideoAnalysis, videoIntelligenceStore } from './store'
 
 // ── static feature cards (upload screen) ──────────────────────────────────────
 const FEATURES = [
@@ -190,173 +191,25 @@ function AnalysisProgress({ currentStage }: { currentStage: number }) {
   )
 }
 
-// ── Types ─────────────────────────────────────────────────────────────────────
-interface SceneResult {
-  sceneId: string
-  timestamp: string
-  start: number
-  end: number
-  engagementScore: number
-  category: 'LOW' | 'AVERAGE' | 'HIGH'
-  recommendation: 'Highlight' | 'Keep' | 'Trim' | 'Cut'
-  sceneContent: string          // What Nova actually saw in the frames
-  audienceReview: string
-  whyItWorked: string | null
-  whyItFailed: string | null
-  reshootGuide: { delivery: string; visual: string; script: string; duration: string }
-  deliveryQuality: number
-  visualVariation: number
-  semanticInterest: number
-}
-
-interface AnalysisResult {
-  success: boolean
-  videoMeta: {
-    s3Key: string
-    contentType: string
-    fileSizeMB: number
-    estimatedDurationSeconds: number
-    estimatedDuration: string
-  }
-  avgEngagementScore: number
-  totalScenes: number
-  scenes: SceneResult[]
-  lowEngagementCount: number
-  highEngagementCount: number
-  improvementTips: string[]
-}
-
 // ═══════════════════════════════════════════════════════════════════════════════
 //  MAIN COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════════
 export default function VideoIntelligencePage() {
   const fileInputRef = useRef<HTMLInputElement | null>(null)
-  const [stage, setStage] = useState(0)           // 0=idle, 1-10=progress, 11=done
-  const [uploadedKey, setKey] = useState<string | null>(null)
-  const [result, setResult] = useState<AnalysisResult | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const { stage, uploadedKey, result, error } = useVideoIntelligenceStore()
 
   const glassBg = 'rgba(18,14,40,0.7)'
   const glassBorder = '1px solid rgba(139,92,246,0.2)'
 
   // ── Upload & analyse ──────────────────────────────────────────────────────
 
-  // Step A: Read exact duration via HTMLVideoElement
-  const readVideoDuration = (file: File): Promise<number> =>
-    new Promise((resolve) => {
-      const url = URL.createObjectURL(file)
-      const v = document.createElement('video')
-      v.preload = 'metadata'
-      v.onloadedmetadata = () => { URL.revokeObjectURL(url); resolve(Math.round(v.duration)) }
-      v.onerror = () => { URL.revokeObjectURL(url); resolve(60) }
-      v.src = url
-    })
-
-  // Step B: Extract real frames at specified timestamps using Canvas API
-  // Returns { timestamp, base64 } for each sample — gives Nova actual visual data
-  const extractFrames = (file: File, timestamps: number[]): Promise<{ timestamp: number; base64: string }[]> =>
-    new Promise((resolve) => {
-      const url = URL.createObjectURL(file)
-      const video = document.createElement('video')
-      const canvas = document.createElement('canvas')
-      const ctx = canvas.getContext('2d')!
-      const frames: { timestamp: number; base64: string }[] = []
-      let idx = 0
-
-      video.preload = 'auto'
-      video.muted = true
-
-      const captureNext = () => {
-        if (idx >= timestamps.length) {
-          URL.revokeObjectURL(url)
-          resolve(frames)
-          return
-        }
-        // Timestamps array is already safely bounded by durationSeconds in the parent function
-        video.currentTime = timestamps[idx];
-      }
-
-      video.onseeked = () => {
-        canvas.width = Math.min(video.videoWidth, 640)
-        canvas.height = Math.min(video.videoHeight, 360)
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
-        const base64 = canvas.toDataURL('image/jpeg', 0.7).split(',')[1]
-        frames.push({ timestamp: timestamps[idx], base64 })
-        idx++
-        captureNext()
-      }
-
-      video.onerror = () => { URL.revokeObjectURL(url); resolve(frames) }
-      video.onloadeddata = captureNext
-      video.src = url
-    })
-
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    setError(null)
-    setResult(null)
-
-    // ── A: Real duration (browser-measured) ───────────────────────────────
-    const durationSeconds = await readVideoDuration(file)
-
-    // ── B: Extract up to 20 frames for high-granularity timeline analysis ──
-    // For a 24s video, this captures almost 1 frame per second.
-    // The very end frame is always captured exactly to reliably detect blank endings.
-    const sampleCount = Math.min(20, Math.max(5, durationSeconds))
-    const timestamps = Array.from({ length: sampleCount }, (_, i) =>
-      Math.max(0, Math.round((i / (sampleCount - 1)) * Math.max(0, durationSeconds - 0.1)))
-    )
-    const frames = await extractFrames(file, timestamps)
-
-    // Stage 1 — upload to S3
-    setStage(1)
-    const formData = new FormData()
-    formData.append('file', file)
-
-    let s3Key: string
-    try {
-      const res = await fetch('/api/upload-video', { method: 'POST', body: formData })
-      const data = await res.json()
-      if (!data.success) { setError('Upload failed — please try again'); setStage(0); return }
-      s3Key = data.key
-      setKey(s3Key)
-    } catch {
-      setError('Upload error — check connection'); setStage(0); return
-    }
-
-    // Stage 2 → start pipeline
-    setStage(2)
-    const stageTimer = setInterval(() => {
-      setStage(prev => {
-        if (prev >= 9) { clearInterval(stageTimer); return prev }
-        return prev + 1
-      })
-    }, 3200)
-
-    try {
-      const res = await fetch('/api/analyze-video', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ s3Key, durationSeconds, frames }),  // ← real frames
-      })
-      const data = await res.json()
-      clearInterval(stageTimer)
-
-      if (!data.success) {
-        setError(data.error ?? 'Analysis failed'); setStage(0); return
-      }
-      setStage(10)
-      await new Promise(r => setTimeout(r, 600))
-      setResult(data)
-      setStage(11)
-    } catch (err) {
-      clearInterval(stageTimer)
-      setError('Analysis error: ' + String(err)); setStage(0)
-    }
+    startVideoAnalysis(file)
   }
 
-  const reset = () => { setStage(0); setKey(null); setResult(null); setError(null) }
+  const reset = () => { videoIntelligenceStore.reset() }
 
   // ════════════════════════════════════════════════════════════════════════════
   //  UPLOAD SCREEN
