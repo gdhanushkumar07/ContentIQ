@@ -2,19 +2,7 @@
 
 import { useState } from "react";
 import { ShareIcon, SparklesIcon, CheckCircleIcon, DocumentDuplicateIcon, LinkIcon, PaperAirplaneIcon, XMarkIcon } from "@heroicons/react/24/outline";
-
-interface PlatformContent {
-  content: string;
-  hashtags: string[];
-}
-
-interface DistributionPlan {
-  youtube: PlatformContent;
-  shorts: PlatformContent;
-  instagram: PlatformContent;
-  x: PlatformContent;
-  facebook: PlatformContent;
-}
+import { useDistributionStore, distributionStore, generateDistributionPlan, PlatformContent, DistributionPlan } from "./store";
 
 const PLATFORMS = [
   { id: "youtube", name: "YouTube", color: "text-red-500", bg: "bg-red-500/10", border: "border-red-500/20" },
@@ -25,62 +13,19 @@ const PLATFORMS = [
 ] as const;
 
 export default function DistributionPage() {
-  const [title, setTitle] = useState("");
-  const [category, setCategory] = useState("");
-  const [description, setDescription] = useState("");
-  const [sourceLinks, setSourceLinks] = useState("");
-  const [selectedPlatformsForSources, setSelectedPlatformsForSources] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [plan, setPlan] = useState<DistributionPlan | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const { title, category, description, sourceLinks, selectedPlatformsForSources, loading, plan, error } = useDistributionStore();
+
+  // Local UI state
   const [copiedSection, setCopiedSection] = useState<string | null>(null);
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [shareContent, setShareContent] = useState("");
 
   const togglePlatform = (platformId: string) => {
-    setSelectedPlatformsForSources((prev) =>
-      prev.includes(platformId)
-        ? prev.filter((id) => id !== platformId)
-        : [...prev, platformId]
-    );
-  };
-
-  const generatePlan = async () => {
-    if (!title || !description) {
-      setError("Please fill in the required fields (Title and Description).");
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-    setPlan(null);
-
-    try {
-      const response = await fetch("/api/distribution", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          title,
-          category: category || "General",
-          description,
-          sourceLinks,
-          selectedPlatformsForSources,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to generate plan");
-      }
-
-      const data = await response.json();
-      setPlan(data);
-    } catch (err: any) {
-      setError(err.message || "An unexpected error occurred.");
-    } finally {
-      setLoading(false);
-    }
+    distributionStore.setState({
+      selectedPlatformsForSources: selectedPlatformsForSources.includes(platformId)
+        ? selectedPlatformsForSources.filter((id) => id !== platformId)
+        : [...selectedPlatformsForSources, platformId]
+    });
   };
 
   const handleCopy = (text: string, sectionId: string) => {
@@ -143,7 +88,7 @@ export default function DistributionPage() {
                   <input
                     type="text"
                     value={title}
-                    onChange={(e) => setTitle(e.target.value)}
+                    onChange={(e) => distributionStore.setState({ title: e.target.value })}
                     placeholder="e.g. Building an AI App in 10 Minutes"
                     className="w-full px-4 py-2.5 rounded-xl border bg-black/50 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 transition-all"
                     style={{ borderColor: "var(--border-subtle)" }}
@@ -157,7 +102,7 @@ export default function DistributionPage() {
                   <input
                     type="text"
                     value={category}
-                    onChange={(e) => setCategory(e.target.value)}
+                    onChange={(e) => distributionStore.setState({ category: e.target.value })}
                     placeholder="e.g. Technology, Education, Vlog"
                     className="w-full px-4 py-2.5 rounded-xl border bg-black/50 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 transition-all"
                     style={{ borderColor: "var(--border-subtle)" }}
@@ -170,7 +115,7 @@ export default function DistributionPage() {
                   </label>
                   <textarea
                     value={description}
-                    onChange={(e) => setDescription(e.target.value)}
+                    onChange={(e) => distributionStore.setState({ description: e.target.value })}
                     placeholder="Briefly describe what your video is about..."
                     rows={4}
                     className="w-full px-4 py-2.5 rounded-xl border bg-black/50 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 transition-all resize-none"
@@ -185,7 +130,7 @@ export default function DistributionPage() {
                   </label>
                   <textarea
                     value={sourceLinks}
-                    onChange={(e) => setSourceLinks(e.target.value)}
+                    onChange={(e) => distributionStore.setState({ sourceLinks: e.target.value })}
                     placeholder="Paste URLs, articles, or references here..."
                     rows={2}
                     className="w-full px-4 py-2.5 rounded-xl border bg-black/50 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 transition-all resize-none mb-3"
@@ -223,7 +168,7 @@ export default function DistributionPage() {
                 )}
 
                 <button
-                  onClick={generatePlan}
+                  onClick={() => generateDistributionPlan()}
                   disabled={loading}
                   className="w-full py-3 px-4 rounded-xl text-white font-medium flex items-center justify-center gap-2 transition-all relative overflow-hidden group mt-2"
                   style={{

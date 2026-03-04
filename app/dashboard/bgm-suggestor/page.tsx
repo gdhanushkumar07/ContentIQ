@@ -4,92 +4,40 @@
 import { useState, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { MusicalNoteIcon, CloudArrowUpIcon, DocumentTextIcon } from '@heroicons/react/24/outline'
-import { Play, Heart, Plus, Square, Loader2 } from 'lucide-react'
-
-const DUMMY_SUGGESTIONS = [
-  { title: 'Epic Sunrise', genre: 'Cinematic', bpm: 78, mood: 'Uplifting', match: '97%', duration: '3:12' },
-  { title: 'Future Pulse', genre: 'Electronic', bpm: 128, mood: 'Energetic', match: '94%', duration: '2:48' },
-  { title: 'Soft Horizon', genre: 'Lo-Fi', bpm: 72, mood: 'Calm', match: '91%', duration: '4:05' },
-  { title: 'Urban Drive', genre: 'Hip-Hop', bpm: 95, mood: 'Confident', match: '88%', duration: '2:30' },
-  { title: 'Deep Discovery', genre: 'Ambient', bpm: 60, mood: 'Thoughtful', match: '85%', duration: '5:20' },
-]
-const TONES = ['Auto', 'Dramatic', 'Sad', 'Love', 'Joyful', 'Epic', 'Suspenseful', 'Relaxing', 'Calm', 'Thoughtful', 'Confident', 'Uplifting', 'Energetic', 'Chill']
+import { Play, Heart, Plus, Square, Loader2, X } from 'lucide-react'
+import { bgmSuggestorStore, generateBgm, useBgmSuggestorStore, TONES } from './store'
 
 export default function BGMSuggestorPage() {
+  const { file, textInput, loading, duration, tone, suggestions, extractedText, errorMsg } = useBgmSuggestorStore()
   const [playingIdx, setPlayingIdx] = useState<number | null>(null)
   const [liked, setLiked] = useState<Set<number>>(new Set())
   const [isToneOpen, setIsToneOpen] = useState(false)
-
-  // New state
-  const [file, setFile] = useState<File | null>(null)
-  const [textInput, setTextInput] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [duration, setDuration] = useState(10) // 10s default
-  const [tone, setTone] = useState('Auto')
-  const [suggestions, setSuggestions] = useState<any[]>(DUMMY_SUGGESTIONS)
-  const [extractedText, setExtractedText] = useState("")
-  const [errorMsg, setErrorMsg] = useState("")
 
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0])
-      setTextInput("") // Clear text if file is uploaded
+      const selectedFile = e.target.files[0];
+      if (selectedFile.type.startsWith('audio/') || selectedFile.type.startsWith('video/')) {
+        bgmSuggestorStore.setState({ file: selectedFile, textInput: "", errorMsg: "" });
+      } else {
+        bgmSuggestorStore.setState({ file: null, errorMsg: "Please upload an audio or video file." });
+      }
     }
   }
 
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setTextInput(e.target.value)
-    if (e.target.value) setFile(null) // Clear file if text is typed
+    bgmSuggestorStore.setState({ textInput: e.target.value });
   }
 
   const handleGenerate = async () => {
-    if (!file && !textInput.trim()) return;
-    setLoading(true);
-    setErrorMsg("");
-    setSuggestions([]);
-
     // Stop any playing audio
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.src = "";
     }
     setPlayingIdx(null);
-
-    try {
-      const formData = new FormData();
-      if (file) {
-        formData.append("file", file);
-      } else {
-        // Mock a text file from the input string to reuse backend logic
-        const blob = new Blob([textInput], { type: "text/plain" });
-        formData.append("file", blob, "typed_input.txt");
-      }
-      formData.append("duration", duration.toString());
-      if (tone !== 'Auto') {
-        formData.append("tone", tone);
-      }
-
-      const res = await fetch("/api/bgm-suggestor", {
-        method: "POST",
-        body: formData
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Generation failed");
-
-      setExtractedText(data.extractedText || "No text could be extracted.");
-      if (data.suggestions) {
-        setSuggestions(data.suggestions);
-      }
-    } catch (err: any) {
-      console.error(err);
-      setErrorMsg(err.message || "An error occurred");
-      setSuggestions(DUMMY_SUGGESTIONS); // Fallback
-    } finally {
-      setLoading(false);
-    }
+    await generateBgm();
   }
 
   const filtered = suggestions
@@ -142,8 +90,9 @@ export default function BGMSuggestorPage() {
               <textarea
                 value={textInput}
                 onChange={handleTextChange}
-                placeholder='Describe a scene, e.g., "She rejected me, I cried so much that I flooded the earth"'
-                className="w-full h-24 bg-black/20 border border-white/10 rounded-xl p-4 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-pink-500/50 resize-none transition-colors"
+                disabled={!!file}
+                placeholder={file ? 'Remove the uploaded file to type text instead.' : 'Describe a scene, e.g., "She rejected me...'}
+                className="w-full h-24 bg-black/20 border border-white/10 rounded-xl p-4 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-pink-500/50 resize-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ background: textInput ? 'rgba(236,72,153,0.05)' : 'rgba(0,0,0,0.2)' }}
               />
             </div>
@@ -155,27 +104,34 @@ export default function BGMSuggestorPage() {
             </div>
 
             {/* File uploader */}
-            <div className="relative w-full">
+            <div className={`relative w-full ${textInput ? 'opacity-50' : ''}`}>
               <input
                 type="file"
                 id="bgm-file-upload"
-                accept="audio/*,video/*,text/plain"
+                accept="audio/*,video/*"
                 onChange={handleFileChange}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                disabled={!!textInput}
+                className={`absolute inset-0 w-full h-full opacity-0 z-10 ${textInput ? 'cursor-not-allowed hidden' : 'cursor-pointer'}`}
               />
               <div className="w-full h-24 border-2 border-dashed rounded-xl flex flex-col items-center justify-center transition-colors"
                 style={{ borderColor: file ? '#ec4899' : 'rgba(255,255,255,0.1)', background: file ? 'rgba(236,72,153,0.05)' : 'rgba(255,255,255,0.02)' }}>
                 {file ? (
-                  <>
-                    <DocumentTextIcon className="w-6 h-6 text-pink-500 mb-1" />
-                    <p className="font-medium text-pink-400 text-sm">{file.name}</p>
+                  <div className="relative w-full h-full flex flex-col items-center justify-center">
+                    <button
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); bgmSuggestorStore.setState({ file: null }); }}
+                      className="absolute top-2 right-2 p-1.5 bg-pink-500/10 hover:bg-pink-500/20 text-pink-400 rounded-lg z-20 transition-colors cursor-pointer"
+                    >
+                      <X size={14} />
+                    </button>
+                    <MusicalNoteIcon className="w-6 h-6 text-pink-500 mb-1" />
+                    <p className="font-medium text-pink-400 text-sm truncate max-w-[80%]">{file.name}</p>
                     <p className="text-xs text-zinc-400">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
-                  </>
+                  </div>
                 ) : (
                   <>
                     <CloudArrowUpIcon className="w-6 h-6 text-zinc-400 mb-1" />
-                    <p className="font-medium text-sm">Click or drag file here</p>
-                    <p className="text-xs text-zinc-400">Audio, Video, or .txt</p>
+                    <p className="font-medium text-sm">{textInput ? 'Clear text to upload file' : 'Click or drag file here'}</p>
+                    <p className="text-xs text-zinc-400">Audio or Video</p>
                   </>
                 )}
               </div>
@@ -189,7 +145,7 @@ export default function BGMSuggestorPage() {
                 type="range"
                 min="5" max="22"
                 value={duration}
-                onChange={(e) => setDuration(parseInt(e.target.value))}
+                onChange={(e) => bgmSuggestorStore.setState({ duration: parseInt(e.target.value) })}
                 className="w-full accent-pink-500"
               />
               <div className="flex justify-between text-xs text-zinc-500 px-1 mt-1">
@@ -202,7 +158,7 @@ export default function BGMSuggestorPage() {
               <label className="block text-sm font-medium text-zinc-300 mb-2 flex justify-between items-center">
                 <span>Optional Tone</span>
                 {tone !== 'Auto' && (
-                  <button onClick={() => setTone('Auto')} className="text-[10px] text-pink-400 hover:text-pink-300 px-1.5 py-0.5 rounded-md bg-pink-500/10 transition-colors">Clear</button>
+                  <button onClick={() => bgmSuggestorStore.setState({ tone: 'Auto' })} className="text-[10px] text-pink-400 hover:text-pink-300 px-1.5 py-0.5 rounded-md bg-pink-500/10 transition-colors">Clear</button>
                 )}
               </label>
 
@@ -232,7 +188,7 @@ export default function BGMSuggestorPage() {
                         {TONES.map(t => (
                           <div
                             key={t}
-                            onClick={() => { setTone(t); setIsToneOpen(false); }}
+                            onClick={() => { bgmSuggestorStore.setState({ tone: t }); setIsToneOpen(false); }}
                             className={`px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-all flex items-center justify-between ${tone === t ? 'bg-pink-500/15 text-pink-300 font-medium' : 'text-zinc-300 hover:bg-white/5 hover:text-white'}`}
                           >
                             {t === 'Auto' ? 'Let AI Decide (Auto)' : t}
@@ -275,77 +231,79 @@ export default function BGMSuggestorPage() {
       )}
 
       {/* Track list */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }} className="glass-card overflow-hidden">
-        <div className="px-6 py-4 border-b border-white/[0.06] flex items-center justify-between">
-          <h2 className="font-semibold flex items-center gap-2"><MusicalNoteIcon style={{ width: 16, height: 16, color: '#ec4899' }} />Suggestions List</h2>
-        </div>
-
-        {loading ? (
-          <div className="py-20 flex flex-col items-center justify-center opacity-50">
-            <Loader2 className="w-8 h-8 animate-spin mb-4 text-pink-500" />
-            <p>Curating perfect tracks...</p>
+      {(suggestions.length > 0 || loading) && (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }} className="glass-card overflow-hidden">
+          <div className="px-6 py-4 border-b border-white/[0.06] flex items-center justify-between">
+            <h2 className="font-semibold flex items-center gap-2"><MusicalNoteIcon style={{ width: 16, height: 16, color: '#ec4899' }} />Suggestions List</h2>
           </div>
-        ) : filtered.length === 0 ? (
-          <div className="py-20 text-center text-zinc-500">No tracks found for this filter.</div>
-        ) : filtered.map((track, i) => (
-          <div key={`${track.title}-${i}`} className="flex items-center gap-4 px-6 py-4 transition-colors group"
-            style={{ borderBottom: i < filtered.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}
-            onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.02)'}
-            onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}>
 
-            {/* Play button */}
-            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
-              onClick={() => togglePlay(i, track)}
-              className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{ background: playingIdx === i ? 'rgba(236,72,153,0.25)' : 'rgba(255,255,255,0.07)', border: `1px solid ${playingIdx === i ? 'rgba(236,72,153,0.5)' : 'rgba(255,255,255,0.1)'}` }}>
-              {playingIdx === i ? (
-                <Square size={14} className="text-pink-400 fill-pink-400" />
-              ) : <Play size={14} style={{ color: 'rgba(255,255,255,0.7)', marginLeft: 2 }} />}
-            </motion.button>
+          {loading ? (
+            <div className="py-20 flex flex-col items-center justify-center opacity-50">
+              <Loader2 className="w-8 h-8 animate-spin mb-4 text-pink-500" />
+              <p>Curating perfect tracks...</p>
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="py-20 text-center text-zinc-500">No tracks found for this filter.</div>
+          ) : filtered.map((track, i) => (
+            <div key={`${track.title}-${i}`} className="flex items-center gap-4 px-6 py-4 transition-colors group"
+              style={{ borderBottom: i < filtered.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}
+              onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.02)'}
+              onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}>
 
-            {/* Indicator */}
-            {playingIdx === i && (
-              <div className="flex gap-[3px] items-center absolute left-16">
-                {[0, 1, 2].map(b => (
-                  <motion.div key={b} animate={{ scaleY: [1, 2, 1] }} transition={{ duration: 0.5, repeat: Infinity, delay: b * 0.15 }}
-                    className="w-0.5 h-3 rounded-full origin-bottom" style={{ background: '#ec4899' }} />
-                ))}
+              {/* Play button */}
+              <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+                onClick={() => togglePlay(i, track)}
+                className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                style={{ background: playingIdx === i ? 'rgba(236,72,153,0.25)' : 'rgba(255,255,255,0.07)', border: `1px solid ${playingIdx === i ? 'rgba(236,72,153,0.5)' : 'rgba(255,255,255,0.1)'}` }}>
+                {playingIdx === i ? (
+                  <Square size={14} className="text-pink-400 fill-pink-400" />
+                ) : <Play size={14} style={{ color: 'rgba(255,255,255,0.7)', marginLeft: 2 }} />}
+              </motion.button>
+
+              {/* Indicator */}
+              {playingIdx === i && (
+                <div className="flex gap-[3px] items-center absolute left-16">
+                  {[0, 1, 2].map(b => (
+                    <motion.div key={b} animate={{ scaleY: [1, 2, 1] }} transition={{ duration: 0.5, repeat: Infinity, delay: b * 0.15 }}
+                      className="w-0.5 h-3 rounded-full origin-bottom" style={{ background: '#ec4899' }} />
+                  ))}
+                </div>
+              )}
+
+              {/* Info */}
+              <div className={`flex-1 min-w-0 ${playingIdx === i ? 'pl-4' : ''} transition-all`}>
+                <div className="text-sm font-medium flex items-center gap-2">
+                  {track.title}
+                  {track.audioBase64 && <span className="text-[10px] bg-pink-500/20 text-pink-400 px-1.5 py-0.5 rounded uppercase tracking-wider">AI Gen</span>}
+                </div>
+                <div className="text-xs mt-0.5 flex gap-3" style={{ color: '#A1A1AA' }}>
+                  <span>{track.genre}</span><span>{track.bpm} BPM</span><span>{track.duration}s</span>
+                </div>
               </div>
-            )}
 
-            {/* Info */}
-            <div className={`flex-1 min-w-0 ${playingIdx === i ? 'pl-4' : ''} transition-all`}>
-              <div className="text-sm font-medium flex items-center gap-2">
-                {track.title}
-                {track.audioBase64 && <span className="text-[10px] bg-pink-500/20 text-pink-400 px-1.5 py-0.5 rounded uppercase tracking-wider">AI Gen</span>}
-              </div>
-              <div className="text-xs mt-0.5 flex gap-3" style={{ color: '#A1A1AA' }}>
-                <span>{track.genre}</span><span>{track.bpm} BPM</span><span>{track.duration}s</span>
+              {/* Mood */}
+              <span className="text-xs px-2.5 py-1 rounded-full hidden md:inline-flex"
+                style={{ background: 'rgba(236,72,153,0.10)', color: '#ec4899', border: '1px solid rgba(236,72,153,0.2)' }}>
+                {track.mood}
+              </span>
+
+              {/* Match */}
+              <span className="text-sm font-bold" style={{ color: '#10b981', minWidth: 40, textAlign: 'right' }}>{track.match}</span>
+
+              {/* Actions */}
+              <div className="flex gap-2 ml-2">
+                <motion.button whileHover={{ scale: 1.1 }} onClick={() => setLiked(s => { const n = new Set(s); n.has(i) ? n.delete(i) : n.add(i); return n })}
+                  className="p-2 rounded-lg" style={{ background: 'rgba(255,255,255,0.05)' }}>
+                  <Heart size={14} style={{ color: liked.has(i) ? '#ec4899' : 'rgba(255,255,255,0.4)', fill: liked.has(i) ? '#ec4899' : 'none' }} />
+                </motion.button>
+                <motion.button whileHover={{ scale: 1.1 }} className="p-2 rounded-lg" style={{ background: 'rgba(255,255,255,0.05)' }}>
+                  <Plus size={14} style={{ color: 'rgba(255,255,255,0.4)' }} />
+                </motion.button>
               </div>
             </div>
-
-            {/* Mood */}
-            <span className="text-xs px-2.5 py-1 rounded-full hidden md:inline-flex"
-              style={{ background: 'rgba(236,72,153,0.10)', color: '#ec4899', border: '1px solid rgba(236,72,153,0.2)' }}>
-              {track.mood}
-            </span>
-
-            {/* Match */}
-            <span className="text-sm font-bold" style={{ color: '#10b981', minWidth: 40, textAlign: 'right' }}>{track.match}</span>
-
-            {/* Actions */}
-            <div className="flex gap-2 ml-2">
-              <motion.button whileHover={{ scale: 1.1 }} onClick={() => setLiked(s => { const n = new Set(s); n.has(i) ? n.delete(i) : n.add(i); return n })}
-                className="p-2 rounded-lg" style={{ background: 'rgba(255,255,255,0.05)' }}>
-                <Heart size={14} style={{ color: liked.has(i) ? '#ec4899' : 'rgba(255,255,255,0.4)', fill: liked.has(i) ? '#ec4899' : 'none' }} />
-              </motion.button>
-              <motion.button whileHover={{ scale: 1.1 }} className="p-2 rounded-lg" style={{ background: 'rgba(255,255,255,0.05)' }}>
-                <Plus size={14} style={{ color: 'rgba(255,255,255,0.4)' }} />
-              </motion.button>
-            </div>
-          </div>
-        ))}
-      </motion.div>
+          ))}
+        </motion.div>
+      )}
     </div>
   )
 }

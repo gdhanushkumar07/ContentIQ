@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { UploadCloud, FileText, FileAudio, Languages, Loader2, Download } from "lucide-react";
+import { useTranslatorStore, translatorStore, translateContent } from "@/app/dashboard/translator/store";
 
 const LANGUAGES = [
     { code: "en", name: "English" },
@@ -24,76 +25,19 @@ const LANGUAGES = [
 ];
 
 export default function TranslationForm() {
-    const [file, setFile] = useState<File | null>(null);
-    const [inputMode, setInputMode] = useState<"file" | "text">("file");
-    const [inputText, setInputText] = useState("");
-    const [sourceLang, setSourceLang] = useState("en");
-    const [targetLang, setTargetLang] = useState("ja");
-    const [voiceGender, setVoiceGender] = useState("any");
-    const [voiceAge, setVoiceAge] = useState("any");
-    const [voiceTone, setVoiceTone] = useState("any");
-
-    const [isUploading, setIsUploading] = useState(false);
-
-    const [result, setResult] = useState<{
-        originalText: string;
-        translatedText: string;
-        type: "audio" | "text";
-        audioBase64?: string;
-        warning?: string;
-    } | null>(null);
-
-    const [error, setError] = useState("");
+    const { file, inputMode, inputText, sourceLang, targetLang, voiceGender, voiceAge, voiceTone, isUploading, result, error } = useTranslatorStore();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
-            setFile(e.target.files[0]);
-            setInputMode("file");
-            setResult(null);
-            setError("");
-        }
-    };
-
-    const handleTranslate = async () => {
-        if (inputMode === "file" && !file) return;
-        if (inputMode === "text" && !inputText.trim()) return;
-
-        setIsUploading(true);
-        setError("");
-        setResult(null);
-
-        const formData = new FormData();
-
-        if (inputMode === "file" && file) {
-            formData.append("file", file);
-        } else if (inputMode === "text") {
-            formData.append("inputText", inputText);
-        }
-
-        formData.append("sourceLanguage", sourceLang);
-        formData.append("targetLanguage", targetLang);
-        formData.append("voiceGender", voiceGender);
-        formData.append("voiceAge", voiceAge);
-        formData.append("voiceTone", voiceTone);
-
-        try {
-            const res = await fetch("/api/translate", {
-                method: "POST",
-                body: formData,
-            });
-
-            const data = await res.json();
-
-            if (!res.ok || data.error) {
-                throw new Error(data.error || "Failed to translate file");
+            const selectedFile = e.target.files[0];
+            const validTypes = ['audio/mpeg', 'audio/wav', 'audio/wave', 'audio/x-wav'];
+            const fileExtension = selectedFile.name.split('.').pop()?.toLowerCase();
+            if (validTypes.includes(selectedFile.type) || fileExtension === 'mp3' || fileExtension === 'wav') {
+                translatorStore.setState({ file: selectedFile, inputMode: "file", result: null, error: "" });
+            } else {
+                translatorStore.setState({ error: "Please upload an .mp3 or .wav file.", file: null });
             }
-
-            setResult(data);
-        } catch (err: any) {
-            setError(err.message);
-        } finally {
-            setIsUploading(false);
         }
     };
 
@@ -126,7 +70,7 @@ export default function TranslationForm() {
                                     <Languages className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-400" />
                                     <select
                                         value={sourceLang}
-                                        onChange={(e) => setSourceLang(e.target.value)}
+                                        onChange={(e) => translatorStore.setState({ sourceLang: e.target.value })}
                                         className="w-full bg-zinc-900/50 border border-zinc-700/50 rounded-xl pl-10 pr-4 py-3 text-sm focus:ring-2 focus:ring-blue-500/50 text-zinc-200 outline-none transition-all appearance-none cursor-pointer"
                                     >
                                         <option value="auto">Auto Detect</option>
@@ -143,7 +87,7 @@ export default function TranslationForm() {
                                     <Languages className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-purple-400" />
                                     <select
                                         value={targetLang}
-                                        onChange={(e) => setTargetLang(e.target.value)}
+                                        onChange={(e) => translatorStore.setState({ targetLang: e.target.value })}
                                         className="w-full bg-zinc-900/50 border border-zinc-700/50 rounded-xl pl-10 pr-4 py-3 text-sm focus:ring-2 focus:ring-purple-500/50 text-zinc-200 outline-none transition-all appearance-none cursor-pointer"
                                     >
                                         {LANGUAGES.map(lang => (
@@ -163,7 +107,7 @@ export default function TranslationForm() {
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
                                     <label className="block text-xs font-medium mb-1 text-zinc-400">Gender</label>
-                                    <select value={voiceGender} onChange={(e) => setVoiceGender(e.target.value)} className="w-full bg-zinc-900/50 border border-zinc-700/50 rounded-lg px-3 py-2 text-sm text-zinc-200 outline-none hover:border-zinc-500/50 transition-colors">
+                                    <select value={voiceGender} onChange={(e) => translatorStore.setState({ voiceGender: e.target.value })} className="w-full bg-zinc-900/50 border border-zinc-700/50 rounded-lg px-3 py-2 text-sm text-zinc-200 outline-none hover:border-zinc-500/50 transition-colors">
                                         <option value="any">Any</option>
                                         <option value="female">Female</option>
                                         <option value="male">Male</option>
@@ -171,7 +115,7 @@ export default function TranslationForm() {
                                 </div>
                                 <div>
                                     <label className="block text-xs font-medium mb-1 text-zinc-400">Age</label>
-                                    <select value={voiceAge} onChange={(e) => setVoiceAge(e.target.value)} className="w-full bg-zinc-900/50 border border-zinc-700/50 rounded-lg px-3 py-2 text-sm text-zinc-200 outline-none hover:border-zinc-500/50 transition-colors">
+                                    <select value={voiceAge} onChange={(e) => translatorStore.setState({ voiceAge: e.target.value })} className="w-full bg-zinc-900/50 border border-zinc-700/50 rounded-lg px-3 py-2 text-sm text-zinc-200 outline-none hover:border-zinc-500/50 transition-colors">
                                         <option value="any">Any</option>
                                         <option value="young">Young</option>
                                         <option value="middle aged">Middle Aged</option>
@@ -180,7 +124,7 @@ export default function TranslationForm() {
                                 </div>
                                 <div>
                                     <label className="block text-xs font-medium mb-1 text-zinc-400">Tone / Category</label>
-                                    <select value={voiceTone} onChange={(e) => setVoiceTone(e.target.value)} className="w-full bg-zinc-900/50 border border-zinc-700/50 rounded-lg px-3 py-2 text-sm text-zinc-200 outline-none hover:border-zinc-500/50 transition-colors">
+                                    <select value={voiceTone} onChange={(e) => translatorStore.setState({ voiceTone: e.target.value })} className="w-full bg-zinc-900/50 border border-zinc-700/50 rounded-lg px-3 py-2 text-sm text-zinc-200 outline-none hover:border-zinc-500/50 transition-colors">
                                         <option value="any">Any</option>
                                         <option value="narration">Narration</option>
                                         <option value="news">News</option>
@@ -196,13 +140,13 @@ export default function TranslationForm() {
                                 <label className="block text-sm font-medium text-zinc-300">Input Content</label>
                                 <div className="flex bg-zinc-900/80 rounded-lg p-1 border border-zinc-800">
                                     <button
-                                        onClick={() => setInputMode("file")}
+                                        onClick={() => translatorStore.setState({ inputMode: "file" })}
                                         className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${inputMode === "file" ? "bg-purple-500/20 text-purple-300" : "text-zinc-500 hover:text-zinc-300"}`}
                                     >
                                         Upload File
                                     </button>
                                     <button
-                                        onClick={() => setInputMode("text")}
+                                        onClick={() => translatorStore.setState({ inputMode: "text" })}
                                         className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${inputMode === "text" ? "bg-purple-500/20 text-purple-300" : "text-zinc-500 hover:text-zinc-300"}`}
                                     >
                                         Paste Text
@@ -219,7 +163,7 @@ export default function TranslationForm() {
                                         type="file"
                                         ref={fileInputRef}
                                         className="hidden"
-                                        accept=".txt,audio/*,video/*"
+                                        accept=".mp3,.wav,audio/mpeg,audio/wav"
                                         onChange={handleFileChange}
                                     />
 
@@ -238,7 +182,7 @@ export default function TranslationForm() {
                                             </div>
                                             <div>
                                                 <p className="text-sm font-medium text-zinc-300">Click or drag file to upload</p>
-                                                <p className="text-xs text-zinc-500 mt-1">Supports .mp3, .wav, .txt</p>
+                                                <p className="text-xs text-zinc-500 mt-1">Supports .mp3 and .wav</p>
                                             </div>
                                         </div>
                                     )}
@@ -248,13 +192,13 @@ export default function TranslationForm() {
                                     className="w-full h-[200px] bg-zinc-900/50 border border-zinc-700/50 focus:border-purple-500/50 rounded-xl p-4 text-sm text-zinc-200 outline-none resize-none transition-colors placeholder:text-zinc-600"
                                     placeholder="Type or paste the text you want to translate and convert to speech..."
                                     value={inputText}
-                                    onChange={(e) => setInputText(e.target.value)}
+                                    onChange={(e) => translatorStore.setState({ inputText: e.target.value })}
                                 />
                             )}
                         </div>
 
                         <button
-                            onClick={handleTranslate}
+                            onClick={() => translateContent()}
                             disabled={(inputMode === "file" && !file) || (inputMode === "text" && !inputText.trim()) || isUploading}
                             className="w-full glow-btn py-3 rounded-xl font-semibold text-white/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-95"
                         >

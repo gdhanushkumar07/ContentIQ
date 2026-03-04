@@ -4,6 +4,7 @@ import { useState, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { DocumentTextIcon } from '@heroicons/react/24/outline'
 import { Sparkles, Copy, Check, Rocket, ScrollText, Clock, BarChart3, TrendingUp, Zap, Target, ChevronRight } from 'lucide-react'
+import { useScriptGeneratorStore, scriptGeneratorStore, generateScript } from './store'
 
 const TONES = ['Casual', 'Educational', 'Storytelling', 'Professional', 'Humorous', 'Mysterious']
 const LENGTHS = [
@@ -88,49 +89,8 @@ function SceneCard({ scene, i }: { scene: any; i: number }) {
 }
 
 export default function ScriptGeneratorPage() {
-  const [topic, setTopic] = useState('')
-  const [tone, setTone] = useState('Casual')
-  const [length, setLength] = useState('1-3 minutes')
-  const [customReq, setCustomReq] = useState('')
-  const [mode, setMode] = useState('Director Mode')
-
-  const [phase, setPhase] = useState<'input' | 'loading' | 'results'>('input')
-  const [data, setData] = useState<any>(null)
-  const [error, setError] = useState('')
+  const { topic, tone, length, customReq, mode, phase, data, error } = useScriptGeneratorStore()
   const [copied, setCopied] = useState(false)
-
-  async function generate() {
-    if (!topic) return
-    setPhase('loading')
-    setData(null)
-    setError('')
-
-    try {
-      const res = await fetch('/api/generate-script', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          topic,
-          tone,
-          length,
-          customRequirements: customReq,
-          mode
-        })
-      })
-      const result = await res.json()
-
-      if (res.ok && result.results) {
-        setData(result)
-        setPhase('results')
-      } else {
-        throw new Error(result.details || result.error || 'Failed to generate script')
-      }
-    } catch (err: any) {
-      console.error(err)
-      setError(err.message || 'An unexpected error occurred')
-      setPhase('input')
-    }
-  }
 
   const copyScript = () => {
     let text = ''
@@ -183,19 +143,19 @@ export default function ScriptGeneratorPage() {
             <div className="space-y-5">
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 ml-1">Topic / Niche</label>
-                <input value={topic} onChange={e => setTopic(e.target.value)}
+                <input value={topic} onChange={e => scriptGeneratorStore.setState({ topic: e.target.value })}
                   className="w-full px-5 py-3.5 rounded-2xl text-sm text-white outline-none transition-all focus:ring-2 focus:ring-cyan-500/50 bg-black/20 border border-white/10"
                   placeholder="e.g., AI Tools for Productivity" />
               </div>
 
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 ml-1">Tone</label>
-                <input value={tone} onChange={e => setTone(e.target.value)}
+                <input value={tone} onChange={e => scriptGeneratorStore.setState({ tone: e.target.value })}
                   className="w-full px-5 py-3.5 rounded-2xl text-sm text-white outline-none transition-all focus:ring-2 focus:ring-cyan-500/50 bg-black/20 border border-white/10 mb-3"
                   placeholder="e.g., Casual, Direct, Urgent..." />
                 <div className="flex flex-wrap gap-2">
                   {TONES.map(t => (
-                    <button key={t} onClick={() => setTone(t)}
+                    <button key={t} onClick={() => scriptGeneratorStore.setState({ tone: t })}
                       className="px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all hover:scale-105 active:scale-95"
                       style={{
                         background: tone === t ? 'rgba(6,182,212,0.15)' : 'rgba(255,255,255,0.03)',
@@ -208,12 +168,12 @@ export default function ScriptGeneratorPage() {
 
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 ml-1">Target Length</label>
-                <input value={length} onChange={e => setLength(e.target.value)}
+                <input value={length} onChange={e => scriptGeneratorStore.setState({ length: e.target.value })}
                   className="w-full px-5 py-3.5 rounded-2xl text-sm text-white outline-none transition-all focus:ring-2 focus:ring-cyan-500/50 bg-black/20 border border-white/10 mb-3"
                   placeholder="e.g., 3 minutes, 60 seconds..." />
                 <div className="flex flex-wrap gap-2">
                   {LENGTHS.map(l => (
-                    <button key={l.value} onClick={() => setLength(l.value)}
+                    <button key={l.value} onClick={() => scriptGeneratorStore.setState({ length: l.value })}
                       className="px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all hover:scale-105 active:scale-95"
                       style={{
                         background: length === l.value ? 'rgba(14,165,233,0.15)' : 'rgba(255,255,255,0.03)',
@@ -226,7 +186,7 @@ export default function ScriptGeneratorPage() {
 
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 ml-1">Custom Rules (Optional)</label>
-                <textarea value={customReq} onChange={e => setCustomReq(e.target.value)}
+                <textarea value={customReq} onChange={e => scriptGeneratorStore.setState({ customReq: e.target.value })}
                   className="w-full px-5 py-3.5 rounded-2xl text-sm text-white outline-none transition-all focus:ring-2 focus:ring-cyan-500/50 bg-black/20 border border-white/10 h-24 resize-none"
                   placeholder="Must mention my newsletter, avoid slang..." />
               </div>
@@ -235,7 +195,7 @@ export default function ScriptGeneratorPage() {
                 <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-3 ml-1">Generation Mode</label>
                 <div className="grid grid-cols-2 gap-3">
                   {MODES.map(m => (
-                    <button key={m.label} onClick={() => setMode(m.label)}
+                    <button key={m.label} onClick={() => scriptGeneratorStore.setState({ mode: m.label })}
                       className="group flex flex-col p-4 rounded-2xl transition-all border relative overflow-hidden text-center"
                       style={{
                         background: mode === m.label ? 'rgba(6,182,212,0.1)' : 'rgba(255,255,255,0.02)',
@@ -253,7 +213,7 @@ export default function ScriptGeneratorPage() {
               </div>
             </div>
 
-            <motion.button onClick={generate} disabled={!topic || phase === 'loading'}
+            <motion.button onClick={() => generateScript()} disabled={!topic || phase === 'loading'}
               whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
               className="w-full py-4 rounded-2xl text-white text-sm font-bold flex items-center justify-center gap-2 relative overflow-hidden group shadow-lg shadow-cyan-500/20"
               style={{ background: 'linear-gradient(135deg, #0891B2 0%, #06B6D4 100%)' }}>
@@ -438,7 +398,7 @@ export default function ScriptGeneratorPage() {
 
 
                 <div className="flex justify-center pt-6">
-                  <motion.button onClick={() => setPhase('input')}
+                  <motion.button onClick={() => scriptGeneratorStore.reset()}
                     whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                     className="px-10 py-3 rounded-full bg-white/5 hover:bg-white/10 text-gray-500 text-[10px] font-black uppercase tracking-widest border border-white/10 transition-all shadow-lg hover:shadow-cyan-500/5">
                     Reset Session
