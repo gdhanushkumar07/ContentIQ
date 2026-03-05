@@ -63,7 +63,10 @@ export default function LoginPage() {
         <div className="glass-card p-10">
           {/* Logo */}
           <div className="flex items-center gap-3 mb-8">
-            <img src="/logo.png" alt="ContentIQ Logo" className="h-10 w-10 object-contain" />
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center"
+              style={{ background: 'linear-gradient(135deg, #38BDF8, #8B5CF6)' }}>
+              <Sparkles size={20} color="#fff" />
+            </div>
             <span className="text-xl font-bold tracking-tight">
               Content<span className="gradient-text">IQ</span>
             </span>

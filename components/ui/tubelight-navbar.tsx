@@ -71,7 +71,17 @@ export function NavBar({ items, className = '' }: NavBarProps) {
           whileHover={{ scale: 1.03 }}
         >
           <Link href="#home" className="flex items-center gap-2.5">
-          <img src="/logo.png" alt="ContentIQ Logo" className="h-8 w-8 object-contain" />
+          <div
+            className="flex items-center justify-center"
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 10,
+              background: 'linear-gradient(135deg, #00d4ff, #7c3aed)',
+            }}
+          >
+            <Sparkles size={18} color="#fff" />
+          </div>
           <span className="text-lg font-bold tracking-tight">
             Content<span className="gradient-text">IQ</span>
           </span>
