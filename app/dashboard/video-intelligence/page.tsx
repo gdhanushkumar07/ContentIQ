@@ -128,22 +128,27 @@ function ReshootGuide({ guide }: {
 }
 
 // ── Analysis progress screen ──────────────────────────────────────────────────
-const STAGES = [
+const STAGES: any[] = [
   { id: 1, label: 'Secure Intake', sub: 'Validating private S3 storage' },
   { id: 2, label: 'Pipeline Initialization', sub: 'Spinning up evaluation engine' },
-  { id: 3, label: 'Scene Segmentation', sub: 'Detecting logical scene boundaries' },
-  { id: 4, label: 'Speech & Delivery Analysis', sub: 'Measuring energy, pauses, naturalness' },
-  { id: 5, label: 'Semantic Value Extraction', sub: 'Scoring novelty, density, clarity' },
+  {
+    id: 3,
+    isParallel: true,
+    tasks: [
+      { label: 'Audio Transcription', sub: 'Lambda extracting speech to text module' },
+      { label: 'Multimodal Vision', sub: 'Nova evaluating frame-by-frame visual signals' }
+    ]
+  },
+  { id: 4, label: 'Timeline & Scene Grouping', sub: 'Detecting logical boundaries' },
+  { id: 5, label: 'Semantic & Delivery Scoring', sub: 'Computing 0-100 engagement' },
   { id: 6, label: 'Audience Simulation', sub: 'Nova Pro simulating first-time viewer' },
-  { id: 7, label: 'Engagement Scoring', sub: 'Computing 0–100 per scene' },
-  { id: 8, label: 'Viewer Review Generation', sub: 'Writing human-like audience feedback' },
-  { id: 9, label: 'Reshoot Direction Engine', sub: 'Producing corrective action plan' },
-  { id: 10, label: 'Intelligence Assembly', sub: 'Merging all signals into final report' },
+  { id: 7, label: 'Reshoot Direction Engine', sub: 'Producing corrective action plan' },
+  { id: 8, label: 'Intelligence Assembly', sub: 'Merging all signals into final report' },
 ]
 
 function AnalysisProgress({ currentStage }: { currentStage: number }) {
   return (
-    <div style={{ maxWidth: 560, margin: '0 auto', padding: '48px 0' }}>
+    <div style={{ maxWidth: 640, margin: '0 auto', padding: '48px 0' }}>
       <div style={{ textAlign: 'center', marginBottom: 32 }}>
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
           <div style={{
@@ -156,7 +161,7 @@ function AnalysisProgress({ currentStage }: { currentStage: number }) {
           </div>
         </div>
         <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 6 }}>Analyzing your video</h2>
-        <p style={{ color: '#64748b', fontSize: 13 }}>Running through 10 intelligence stages — this takes ~30s</p>
+        <p style={{ color: '#64748b', fontSize: 13 }}>Running through parallel intelligence stages — this takes ~30s</p>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -164,6 +169,41 @@ function AnalysisProgress({ currentStage }: { currentStage: number }) {
           const done = s.id < currentStage
           const active = s.id === currentStage
           const pending = s.id > currentStage
+
+          if (s.isParallel) {
+            return (
+              <div key={s.id} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                {s.tasks.map((task: any, idx: number) => (
+                  <div key={idx} style={{
+                    display: 'flex', alignItems: 'flex-start', gap: 12,
+                    padding: '12px 14px', borderRadius: 12,
+                    background: active ? 'rgba(56,189,248,0.12)' : done ? 'rgba(34,197,94,0.07)' : 'rgba(255,255,255,0.03)',
+                    border: active ? '1px solid rgba(56,189,248,0.4)' : done ? '1px solid rgba(34,197,94,0.2)' : '1px solid rgba(255,255,255,0.05)',
+                    transition: 'all 0.3s ease',
+                    opacity: pending ? 0.4 : 1,
+                  }}>
+                    <div style={{
+                      width: 26, height: 26, borderRadius: '50%', flexShrink: 0,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700,
+                      background: done ? '#22c55e' : active ? '#38bdf8' : 'rgba(255,255,255,0.06)',
+                      color: done || active ? '#fff' : '#64748b',
+                      boxShadow: active ? '0 0 12px rgba(56,189,248,0.5)' : 'none',
+                      marginTop: 2
+                    }}>
+                      {done ? '✓' : `${s.id}${idx === 0 ? 'A' : 'B'}`}
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 12.5, fontWeight: active ? 700 : 500, color: active ? '#7dd3fc' : done ? '#4ade80' : '#e2e8f0', marginBottom: 2 }}>
+                        {task.label}
+                      </div>
+                      <div style={{ fontSize: 11, color: active ? '#bae6fd' : '#475569', lineHeight: 1.3 }}>{task.sub}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )
+          }
+
           return (
             <div key={s.id} style={{
               display: 'flex', alignItems: 'center', gap: 12,
@@ -308,7 +348,7 @@ export default function VideoIntelligencePage() {
   // ════════════════════════════════════════════════════════════════════════════
   //  ANALYSIS PROGRESS SCREEN
   // ════════════════════════════════════════════════════════════════════════════
-  if (stage > 0 && stage <= 10) {
+  if (stage > 0 && !result) {
     return (
       <div style={{ maxWidth: 700, margin: '0 auto' }}>
         <AnalysisProgress currentStage={stage} />
