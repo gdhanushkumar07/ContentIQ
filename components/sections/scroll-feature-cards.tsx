@@ -47,7 +47,7 @@ export default function ScrollFeatureCards() {
   ];
 
   return (
-    <section className="relative w-full py-32 z-10 max-w-7xl mx-auto">
+    <section id="features" className="relative w-full py-32 z-10 max-w-7xl mx-auto scroll-mt-32">
       <ContainerScroll
         titleComponent={
           <>

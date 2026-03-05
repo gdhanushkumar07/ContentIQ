@@ -81,9 +81,23 @@ function SignalBar({ label, value, icon: Icon, color }: { label: string; value: 
   )
 }
 
-// ── Reshoot accordion panel ───────────────────────────────────────────────────
-function ReshootGuide({ guide }: { guide: { delivery: string; visual: string; script: string; duration: string } }) {
+// ── Reshoot accordion panel (7-field director guide) ───────────────────────────────────
+function ReshootGuide({ guide }: {
+  guide: {
+    delivery: string; visual: string; script: string; duration: string;
+    pacing: string; emotion: string; musicSuggestion: string;
+  }
+}) {
   const [open, setOpen] = useState(false)
+  const items = [
+    { label: '🎙️ Delivery', value: guide.delivery },
+    { label: '🎥 Visual', value: guide.visual },
+    { label: '📝 Script', value: guide.script },
+    { label: '⏱️ Duration', value: guide.duration },
+    { label: '⚡ Pacing', value: guide.pacing },
+    { label: '💡 Emotion', value: guide.emotion },
+    { label: '🎵 Music', value: guide.musicSuggestion },
+  ]
   return (
     <div style={{ marginTop: 12, borderRadius: 10, border: '1px solid rgba(139,92,246,0.2)', overflow: 'hidden' }}>
       <button
@@ -95,21 +109,16 @@ function ReshootGuide({ guide }: { guide: { delivery: string; visual: string; sc
         }}
       >
         <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          🎬 Reshoot Guide
+          🎬 Director’s Playbook
         </span>
         {open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
       </button>
       {open && (
-        <div style={{ padding: '12px 14px', background: 'rgba(10,5,30,0.5)', display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {[
-            { label: '🎙️ Delivery', value: guide.delivery },
-            { label: '🎥 Visual', value: guide.visual },
-            { label: '📝 Script', value: guide.script },
-            { label: '⏱️ Duration', value: guide.duration },
-          ].map(item => (
-            <div key={item.label} style={{ display: 'flex', gap: 8 }}>
-              <span style={{ fontSize: 12, color: '#64748b', flexShrink: 0, width: 80 }}>{item.label}</span>
-              <span style={{ fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.5 }}>{item.value}</span>
+        <div style={{ padding: '12px 14px', background: 'rgba(10,5,30,0.5)', display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {items.map(item => (
+            <div key={item.label} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+              <span style={{ fontSize: 12, color: '#7c3aed', flexShrink: 0, width: 90, fontWeight: 600 }}>{item.label}</span>
+              <span style={{ fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.6 }}>{item.value}</span>
             </div>
           ))}
         </div>
@@ -119,22 +128,27 @@ function ReshootGuide({ guide }: { guide: { delivery: string; visual: string; sc
 }
 
 // ── Analysis progress screen ──────────────────────────────────────────────────
-const STAGES = [
+const STAGES: any[] = [
   { id: 1, label: 'Secure Intake', sub: 'Validating private S3 storage' },
   { id: 2, label: 'Pipeline Initialization', sub: 'Spinning up evaluation engine' },
-  { id: 3, label: 'Scene Segmentation', sub: 'Detecting logical scene boundaries' },
-  { id: 4, label: 'Speech & Delivery Analysis', sub: 'Measuring energy, pauses, naturalness' },
-  { id: 5, label: 'Semantic Value Extraction', sub: 'Scoring novelty, density, clarity' },
+  {
+    id: 3,
+    isParallel: true,
+    tasks: [
+      { label: 'Audio Transcription', sub: 'Lambda extracting speech to text module' },
+      { label: 'Multimodal Vision', sub: 'Nova evaluating frame-by-frame visual signals' }
+    ]
+  },
+  { id: 4, label: 'Timeline & Scene Grouping', sub: 'Detecting logical boundaries' },
+  { id: 5, label: 'Semantic & Delivery Scoring', sub: 'Computing 0-100 engagement' },
   { id: 6, label: 'Audience Simulation', sub: 'Nova Pro simulating first-time viewer' },
-  { id: 7, label: 'Engagement Scoring', sub: 'Computing 0–100 per scene' },
-  { id: 8, label: 'Viewer Review Generation', sub: 'Writing human-like audience feedback' },
-  { id: 9, label: 'Reshoot Direction Engine', sub: 'Producing corrective action plan' },
-  { id: 10, label: 'Intelligence Assembly', sub: 'Merging all signals into final report' },
+  { id: 7, label: 'Reshoot Direction Engine', sub: 'Producing corrective action plan' },
+  { id: 8, label: 'Intelligence Assembly', sub: 'Merging all signals into final report' },
 ]
 
 function AnalysisProgress({ currentStage }: { currentStage: number }) {
   return (
-    <div style={{ maxWidth: 560, margin: '0 auto', padding: '48px 0' }}>
+    <div style={{ maxWidth: 640, margin: '0 auto', padding: '48px 0' }}>
       <div style={{ textAlign: 'center', marginBottom: 32 }}>
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
           <div style={{
@@ -147,7 +161,7 @@ function AnalysisProgress({ currentStage }: { currentStage: number }) {
           </div>
         </div>
         <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 6 }}>Analyzing your video</h2>
-        <p style={{ color: '#64748b', fontSize: 13 }}>Running through 10 intelligence stages — this takes ~30s</p>
+        <p style={{ color: '#64748b', fontSize: 13 }}>Running through parallel intelligence stages — this takes ~30s</p>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -155,6 +169,41 @@ function AnalysisProgress({ currentStage }: { currentStage: number }) {
           const done = s.id < currentStage
           const active = s.id === currentStage
           const pending = s.id > currentStage
+
+          if (s.isParallel) {
+            return (
+              <div key={s.id} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                {s.tasks.map((task: any, idx: number) => (
+                  <div key={idx} style={{
+                    display: 'flex', alignItems: 'flex-start', gap: 12,
+                    padding: '12px 14px', borderRadius: 12,
+                    background: active ? 'rgba(56,189,248,0.12)' : done ? 'rgba(34,197,94,0.07)' : 'rgba(255,255,255,0.03)',
+                    border: active ? '1px solid rgba(56,189,248,0.4)' : done ? '1px solid rgba(34,197,94,0.2)' : '1px solid rgba(255,255,255,0.05)',
+                    transition: 'all 0.3s ease',
+                    opacity: pending ? 0.4 : 1,
+                  }}>
+                    <div style={{
+                      width: 26, height: 26, borderRadius: '50%', flexShrink: 0,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700,
+                      background: done ? '#22c55e' : active ? '#38bdf8' : 'rgba(255,255,255,0.06)',
+                      color: done || active ? '#fff' : '#64748b',
+                      boxShadow: active ? '0 0 12px rgba(56,189,248,0.5)' : 'none',
+                      marginTop: 2
+                    }}>
+                      {done ? '✓' : `${s.id}${idx === 0 ? 'A' : 'B'}`}
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 12.5, fontWeight: active ? 700 : 500, color: active ? '#7dd3fc' : done ? '#4ade80' : '#e2e8f0', marginBottom: 2 }}>
+                        {task.label}
+                      </div>
+                      <div style={{ fontSize: 11, color: active ? '#bae6fd' : '#475569', lineHeight: 1.3 }}>{task.sub}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )
+          }
+
           return (
             <div key={s.id} style={{
               display: 'flex', alignItems: 'center', gap: 12,
@@ -196,7 +245,7 @@ function AnalysisProgress({ currentStage }: { currentStage: number }) {
 // ═══════════════════════════════════════════════════════════════════════════════
 export default function VideoIntelligencePage() {
   const fileInputRef = useRef<HTMLInputElement | null>(null)
-  const { stage, uploadedKey, result, error } = useVideoIntelligenceStore()
+  const { stage, uploadedKey, result, error, category } = useVideoIntelligenceStore()
 
   const glassBg = 'rgba(18,14,40,0.7)'
   const glassBorder = '1px solid rgba(139,92,246,0.2)'
@@ -248,6 +297,28 @@ export default function VideoIntelligencePage() {
               }}>{t}</span>
             ))}
           </div>
+
+          <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
+            <label style={{ fontSize: 13, color: '#94a3b8', fontWeight: 500 }}>Select Category:</label>
+            <select
+              value={category}
+              onChange={(e) => videoIntelligenceStore.setState({ category: e.target.value })}
+              style={{
+                background: 'rgba(15,10,35,0.8)', color: '#e2e8f0', border: '1px solid rgba(139,92,246,0.4)',
+                borderRadius: 8, padding: '8px 16px', fontSize: 14, outline: 'none', cursor: 'pointer'
+              }}
+            >
+              <option value="Tech Review">Tech Review</option>
+              <option value="Comedy">Comedy</option>
+              <option value="Cooking">Cooking</option>
+              <option value="Educational">Educational</option>
+              <option value="Vlog">Vlog</option>
+              <option value="Gaming">Gaming</option>
+              <option value="Entertainment">Entertainment</option>
+              <option value="General">General</option>
+            </select>
+          </div>
+
           <input type="file" accept="video/*" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileChange} />
           <button onClick={() => fileInputRef.current?.click()} className="glow-btn px-8 py-3 text-white text-sm font-semibold">
             Start Private Analysis
@@ -277,7 +348,7 @@ export default function VideoIntelligencePage() {
   // ════════════════════════════════════════════════════════════════════════════
   //  ANALYSIS PROGRESS SCREEN
   // ════════════════════════════════════════════════════════════════════════════
-  if (stage > 0 && stage <= 10) {
+  if (stage > 0 && !result) {
     return (
       <div style={{ maxWidth: 700, margin: '0 auto' }}>
         <AnalysisProgress currentStage={stage} />
@@ -429,6 +500,70 @@ export default function VideoIntelligencePage() {
         </div>
       </div>
 
+      {/* ── 15-Point Video Intelligence Report ───────────────────────────────────────── */}
+      <div style={{ marginBottom: 32 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+          <Brain size={18} style={{ color: '#a78bfa' }} />
+          <h2 style={{ fontWeight: 700, fontSize: 17 }}>Comprehensive Intelligence Report</h2>
+        </div>
+
+        <div style={{
+          display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16
+        }}>
+          {[
+            { label: 'Category Suitability', value: result.categorySuitabilityScore, icon: Target, c: '#a78bfa' },
+            { label: 'Hook Strength', value: result.hookStrength, icon: Zap, c: '#f59e0b' },
+            { label: 'Content Value', value: result.contentValue, icon: Brain, c: '#34d399' },
+            { label: 'Information Density', value: result.informationDensity, icon: BarChart2, c: '#38bdf8' },
+            { label: 'Delivery Strength', value: result.deliveryStrength, icon: Mic, c: '#a78bfa' },
+            { label: 'Visual Quality', value: result.visualQuality, icon: Eye, c: '#22c55e' },
+            { label: 'Editing Quality', value: result.editingQuality, icon: Clock, c: '#f472b6' },
+            { label: 'Emotional Impact', value: result.emotionalImpact, icon: TrendingUp, c: '#ef4444' },
+            { label: 'Competitor Benchmark', value: result.competitorBenchmark, icon: Target, c: '#fbbf24' },
+            { label: 'Content Uniqueness', value: result.contentUniqueness, icon: SparklesIcon, c: '#c084fc' },
+            { label: 'Safety Confidence', value: result.safetyScore, icon: Shield, c: '#10b981' }
+          ].map(m => (
+            <div key={m.label} style={{
+              background: glassBg, border: glassBorder, borderRadius: 16, padding: 18,
+              backdropFilter: 'blur(16px)', display: 'flex', flexDirection: 'column', gap: 10
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <m.icon size={16} style={{ color: m.c ?? '#fff' }} />
+                <span style={{ fontWeight: 800, fontSize: 18, color: m.c }}>{m.value}%</span>
+              </div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#e2e8f0' }}>{m.label}</div>
+              <div style={{ height: 4, borderRadius: 4, background: 'rgba(255,255,255,0.05)', overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${m.value}%`, background: m.c, borderRadius: 4 }} />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Virality Prediction Banner */}
+        <div style={{
+          marginTop: 16, background: 'linear-gradient(90deg, rgba(139,92,246,0.15), rgba(56,189,248,0.15))',
+          border: '1px solid rgba(139,92,246,0.4)', borderRadius: 16, padding: '24px 32px',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 20
+        }}>
+          <div>
+            <div style={{ fontSize: 13, color: '#c4b5fd', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>
+              Final Viral Prediction
+            </div>
+            <div style={{ fontSize: 28, fontWeight: 800, color: '#fff' }}>
+              {result.viralityPrediction}
+            </div>
+          </div>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: 13, color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>
+              Virality Score
+            </div>
+            <div style={{ fontSize: 36, fontWeight: 800, color: '#38bdf8', lineHeight: 1 }}>
+              {result.viralityScore}<span style={{ fontSize: 18, color: '#94a3b8' }}>/100</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* ── Scene-by-Scene Timeline ──────────────────────────────────────────── */}
       <div style={{ marginBottom: 32 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
@@ -450,20 +585,22 @@ export default function VideoIntelligencePage() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
               {scenes.map((scene, idx) => {
-                const colors = getScoreColor(scene.engagementScore)
+                const colors = getScoreColor(scene.viralityScore ?? scene.engagementScore)
                 const pillSt = getPillStyle(scene.recommendation)
                 const catStyle = getCategoryStyle(scene.category)
                 return (
                   <div key={idx} style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
-                    {/* Score badge */}
+                    {/* Virality score badge */}
                     <div style={{
-                      width: 48, height: 48, borderRadius: '50%', flexShrink: 0,
-                      background: 'rgba(0,0,0,0.5)', border: `2px solid ${colors.border}`,
-                      boxShadow: `0 0 16px ${colors.glow}`,
+                      width: 52, height: 52, borderRadius: '50%', flexShrink: 0,
+                      background: 'rgba(0,0,0,0.5)',
+                      border: `2px solid ${colors.border}`,
+                      boxShadow: `0 0 18px ${colors.glow}`,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontWeight: 800, fontSize: 13, color: colors.text, position: 'relative', zIndex: 1
+                      flexDirection: 'column', position: 'relative', zIndex: 1
                     }}>
-                      {scene.engagementScore}
+                      <span style={{ fontWeight: 800, fontSize: 13, color: colors.text, lineHeight: 1 }}>{scene.viralityScore ?? scene.engagementScore}</span>
+                      <span style={{ fontSize: 8, color: '#7c3aed', fontWeight: 600, letterSpacing: '0.04em', marginTop: 2 }}>VIRAL</span>
                     </div>
 
                     {/* Scene card */}
@@ -500,12 +637,29 @@ export default function VideoIntelligencePage() {
                         <div style={{
                           display: 'flex', alignItems: 'flex-start', gap: 8,
                           background: 'rgba(56,189,248,0.06)', border: '1px solid rgba(56,189,248,0.15)',
-                          borderRadius: 8, padding: '7px 12px', marginBottom: 10,
+                          borderRadius: 8, padding: '7px 12px', marginBottom: 8,
                         }}>
-                          <span style={{ fontSize: 13, flexShrink: 0 }}>🎬</span>
+                          <span style={{ fontSize: 13, flexShrink: 0 }}>🎥</span>
                           <span style={{ fontSize: 12.5, color: '#7dd3fc', lineHeight: 1.5 }}>
                             {scene.sceneContent}
                           </span>
+                        </div>
+                      )}
+
+                      {/* Audio content — what was actually said in this scene */}
+                      {scene.audioContent && scene.audioContent !== '[No audio transcript for this scene]' && (
+                        <div style={{
+                          display: 'flex', alignItems: 'flex-start', gap: 8,
+                          background: 'rgba(168,85,247,0.07)', border: '1px solid rgba(168,85,247,0.2)',
+                          borderRadius: 8, padding: '7px 12px', marginBottom: 8,
+                        }}>
+                          <span style={{ fontSize: 13, flexShrink: 0 }}>🎤</span>
+                          <div>
+                            <div style={{ fontSize: 10, color: '#a78bfa', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 3 }}>Spoken Audio</div>
+                            <span style={{ fontSize: 12.5, color: '#e9d5ff', lineHeight: 1.6, fontStyle: 'italic' }}>
+                              &ldquo;{scene.audioContent}&rdquo;
+                            </span>
+                          </div>
                         </div>
                       )}
 

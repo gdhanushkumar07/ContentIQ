@@ -33,8 +33,8 @@ export default function Sidebar() {
 
   return (
     <aside
+      className="group w-[64px] hover:w-[260px] transition-all duration-300 z-50 relative"
       style={{
-        width: 260,
         minHeight: '100vh',
         background: 'var(--sidebar-bg)',
         borderRight: '1px solid var(--border-color)',
@@ -44,25 +44,20 @@ export default function Sidebar() {
         position: 'sticky',
         top: 0,
         height: '100vh',
+        overflowX: 'hidden',
         overflowY: 'auto',
-        transition: 'background 0.3s ease, border-color 0.3s ease',
       }}
     >
       {/* Logo */}
-      <div className="flex items-center gap-3 px-6 py-6" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-        <div
-          className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-          style={{ background: 'linear-gradient(135deg, #38BDF8, #8B5CF6)' }}
-        >
-          <Sparkles size={18} color="#fff" />
-        </div>
-        <span className="text-lg font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+      <div className="flex items-center gap-3 px-[14px] py-6 whitespace-nowrap" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+        <img src="/logo.png" alt="ContentIQ Logo" className="h-9 w-9 object-contain flex-shrink-0" />
+        <span className="text-lg font-bold tracking-tight opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap" style={{ color: 'var(--text-primary)' }}>
           Content<span className="gradient-text">IQ</span>
         </span>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 py-4 space-y-0.5">
+      <nav className="flex-1 px-[6px] py-4 space-y-0.5 overflow-hidden">
         {NAV_ITEMS.map((item) => {
           const isActive =
             pathname === item.href ||
@@ -72,8 +67,8 @@ export default function Sidebar() {
             <Link key={item.href} href={item.href}>
               <div
                 className={[
-                  'group relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium',
-                  'transition-all duration-300 ease-out',
+                  'group/item relative flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium',
+                  'transition-all duration-300 ease-out overflow-hidden',
                   !isActive && 'hover:translate-x-[5px]',
                 ].filter(Boolean).join(' ')}
                 style={{
@@ -90,7 +85,7 @@ export default function Sidebar() {
                 {/* Hover gradient overlay (inactive only) */}
                 {!isActive && (
                   <div
-                    className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out pointer-events-none"
+                    className="absolute inset-0 rounded-xl opacity-0 group-hover/item:opacity-100 transition-opacity duration-300 ease-out pointer-events-none"
                     style={{
                       background: 'linear-gradient(90deg, rgba(139,92,246,0.08) 0%, rgba(56,189,248,0.03) 100%)',
                     }}
@@ -99,14 +94,14 @@ export default function Sidebar() {
                 {/* Hover glow ring */}
                 {!isActive && (
                   <div
-                    className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out pointer-events-none dark:block"
+                    className="absolute inset-0 rounded-xl opacity-0 group-hover/item:opacity-100 transition-opacity duration-300 ease-out pointer-events-none dark:block"
                     style={{ boxShadow: '0 0 16px rgba(139,92,246,0.20)' }}
                   />
                 )}
 
                 {/* Icon */}
                 <item.icon
-                  className={['flex-shrink-0 transition-all duration-300 ease-out', !isActive && 'group-hover:scale-110'].join(' ')}
+                  className={['flex-shrink-0 transition-all duration-300 ease-out', !isActive && 'group-hover/item:scale-110'].join(' ')}
                   style={{
                     width: 20, height: 20,
                     color: isActive ? '#8B5CF6' : 'currentColor',
@@ -115,7 +110,7 @@ export default function Sidebar() {
                 />
 
                 {/* Label */}
-                <span className="truncate relative z-10">{item.label}</span>
+                <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap relative z-10">{item.label}</span>
 
                 {/* Active left-glow pip */}
                 {isActive && (

@@ -45,34 +45,39 @@ export const Timeline = ({ data }: { data: TimelineEntry[] }) => {
         </p>
       </div>
 
-      <div ref={ref} className="relative max-w-7xl mx-auto pb-20">
+      <div ref={ref} className="relative max-w-7xl mx-auto pb-20 space-y-28">
         {data.map((item, index) => (
-          <div
+          <motion.div
             key={index}
-            className="flex justify-start pt-10 md:pt-40 md:gap-10"
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="flex justify-start pt-10 md:pt-40 md:gap-10 group"
           >
             <div className="sticky flex flex-col md:flex-row z-40 items-center top-40 self-start max-w-xs lg:max-w-sm md:w-full">
               <div className="h-10 absolute left-3 md:left-3 w-10 rounded-full bg-black/50 border border-neutral-700/50 backdrop-blur-sm flex items-center justify-center">
-                <div className="h-4 w-4 rounded-full bg-blue-500/20 border border-blue-500/50 p-2" />
+                <div className="w-6 h-6 rounded-full bg-blue-500/20 border border-blue-400/40 backdrop-blur shadow-[0_0_20px_rgba(59,130,246,0.6)]">
+                </div>
               </div>
-              <h3 className="hidden md:block text-xl md:pl-20 md:text-5xl font-bold text-neutral-500 dark:text-neutral-500 ">
+              <h3 className="hidden md:block md:pl-20 text-5xl font-semibold tracking-tight bg-gradient-to-r from-white via-blue-200 to-purple-300 bg-clip-text text-transparent">
                 {item.title}
               </h3>
             </div>
 
             <div className="relative pl-20 pr-4 md:pl-4 w-full">
-              <h3 className="md:hidden block text-2xl mb-4 text-left font-bold text-neutral-500 dark:text-neutral-500">
+              <h3 className="md:hidden block text-4xl mb-4 text-left font-semibold tracking-tight bg-gradient-to-r from-white via-blue-200 to-purple-300 bg-clip-text text-transparent">
                 {item.title}
               </h3>
               {item.content}{" "}
             </div>
-          </div>
+          </motion.div>
         ))}
         <div
           style={{
             height: height + "px",
           }}
-          className="absolute md:left-8 left-8 top-0 overflow-hidden w-[2px] bg-[linear-gradient(to_bottom,var(--tw-gradient-stops))] from-transparent from-[0%] via-neutral-200 dark:via-neutral-700 to-transparent to-[99%]  [mask-image:linear-gradient(to_bottom,transparent_0%,black_10%,black_90%,transparent_100%)] "
+          className="absolute md:left-8 left-8 top-0 overflow-hidden bg-gradient-to-b from-blue-500/60 via-purple-500/40 to-transparent w-[2px]"
         >
           <motion.div
             style={{

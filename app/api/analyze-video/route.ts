@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import { InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
 import { GetObjectCommand, HeadObjectCommand } from "@aws-sdk/client-s3";
+import { InvokeCommand } from "@aws-sdk/client-lambda";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { s3, bedrock } from "@/lib/aws";
+import { s3, bedrock, lambda } from "@/lib/aws";
 
 export const runtime = "nodejs";
-export const maxDuration = 120;
+export const maxDuration = 300; // Allow 5 full minutes for Lambda + Nova Pro Pipeline
 
 // ─── Model IDs from environment variables ──
 const NOVA_LITE = process.env.NOVA_LITE_MODEL_ID || "us.amazon.nova-lite-v1:0";
@@ -123,9 +124,11 @@ interface SceneResult {
     start: number;
     end: number;
     engagementScore: number;
+    viralityScore: number;
     category: "LOW" | "AVERAGE" | "HIGH";
     recommendation: "Highlight" | "Keep" | "Trim" | "Cut";
-    sceneContent: string;          // ← What's actually in this scene (real visual analysis)
+    sceneContent: string;
+    audioContent: string;          // ← Actual spoken words in this scene
     audienceReview: string;
     whyItWorked: string | null;
     whyItFailed: string | null;
@@ -134,6 +137,9 @@ interface SceneResult {
         visual: string;
         script: string;
         duration: string;
+        pacing: string;
+        emotion: string;
+        musicSuggestion: string;
     };
     deliveryQuality: number;
     visualVariation: number;
@@ -143,10 +149,11 @@ interface SceneResult {
 // ─── MAIN HANDLER ─────────────────────────────────────────────────────────────
 export async function POST(req: Request) {
     try {
-        const { s3Key, durationSeconds: clientDuration, frames: clientFrames } = await req.json();
+        const { s3Key, durationSeconds: clientDuration, frames: clientFrames, category } = await req.json();
         if (!s3Key) {
             return NextResponse.json({ error: "Missing s3Key" }, { status: 400 });
         }
+        const videoCategory = category || "General";
         const realDuration: number = (typeof clientDuration === "number" && clientDuration > 0)
             ? Math.round(clientDuration)
             : 60;
@@ -182,9 +189,11 @@ export async function POST(req: Request) {
         );
 
         // ════════════════════════════════════════════════════════════════════
-        // STAGE 3 — Granular Timeline Extraction (Multimodal)
-        // Extract data for every exact interval based on real duration
+        // STAGE 2 & 3 — Parallel Audio & Vision Analysis
         // ════════════════════════════════════════════════════════════════════
+        let spokenTranscript = "No audio transcript available.";
+        let timelineData: any[] = [];
+
         // Determine interval size: 1s for <30s, 2s for <120s, scaling up safely
         const intervalSize = realDuration <= 30 ? 1 : realDuration <= 120 ? 2 : Math.max(3, Math.ceil(realDuration / 60));
         const intervals = [];
@@ -225,45 +234,74 @@ Return ONLY valid JSON:
   ]
 }`;
 
-        let timelineData;
-        try {
-            const timelineRaw = await invokeNovaWithImages(
-                NOVA_LITE,
-                "You are a multimodal video timeline analyzer. Analyze each frame image separately based on its timestamp. Output only JSON.",
-                timelinePrompt,
-                videoFrames.slice(0, 20) // Send up to 20 frames
-            );
+        // ─── Promise 1: Audio Transcription (Lambda) ───
+        const transcribePromise = (async () => {
+            try {
+                const lambdaName = process.env.TRANSCRIBE_LAMBDA_NAME;
+                if (!lambdaName) {
+                    console.warn("Skipping transcription - TRANSCRIBE_LAMBDA_NAME is not set.");
+                    return;
+                }
+                console.log(`[Parallel] Invoking Transcript Lambda: ${lambdaName} for ${s3Key}`);
+                const invokeCmd = new InvokeCommand({
+                    FunctionName: lambdaName,
+                    InvocationType: "RequestResponse",
+                    Payload: JSON.stringify({
+                        body: JSON.stringify({ s3Key, bucketName: bucket })
+                    })
+                });
 
-            console.log("=== RAW STRING FROM NOVA ===");
-            console.log(timelineRaw);
-            console.log("=== RAW STRING LENGTH ===", timelineRaw.length);
+                const lambdaRes = await lambda.send(invokeCmd);
+                const responsePayload = JSON.parse(new TextDecoder().decode(lambdaRes.Payload));
 
-            const parsed = safeJson<{ timeline: any[] }>(timelineRaw, { timeline: [] });
-            console.log("=== PARSED OBJECT ===");
-            console.log(JSON.stringify(parsed, null, 2));
-            
-            timelineData = parsed.timeline || [];
-            
-            console.log(`=== NOVA RETURNED ${timelineData.length} INTERVALS (Expected: ${intervals.length}) ===`);
-            if (timelineData.length < intervals.length) {
-                console.warn(`⚠️ WARNING: Nova only returned ${timelineData.length} intervals but we expected ${intervals.length}`);
+                if (responsePayload.statusCode === 200 && responsePayload.body) {
+                    const parsedBody = JSON.parse(responsePayload.body);
+                    if (parsedBody.transcript) {
+                        spokenTranscript = parsedBody.transcript;
+                        console.log(`[Parallel] Transcribed audio successfully (${spokenTranscript.length} chars)`);
+                    }
+                } else {
+                    console.warn("[Parallel] Lambda returned an error or empty transcript:", responsePayload);
+                }
+            } catch (lambdaErr) {
+                console.error("[Parallel] Failed to invoke transcription Lambda:", lambdaErr);
             }
-        } catch (e) {
-            console.error("Timeline extraction failed:", e);
-            timelineData = [];
-        }
+        })();
+
+        // ─── Promise 2: Vision Analysis (Nova) ───
+        const visionPromise = (async () => {
+            try {
+                console.log(`[Parallel] Invoking Nova Multimodal for ${videoFrames.length} frames`);
+                const timelineRaw = await invokeNovaWithImages(
+                    NOVA_LITE,
+                    "You are a multimodal video timeline analyzer. Analyze each frame image separately based on its timestamp. Output only JSON.",
+                    timelinePrompt,
+                    videoFrames.slice(0, 20)
+                );
+
+                const parsed = safeJson<{ timeline: any[] }>(timelineRaw, { timeline: [] });
+                timelineData = parsed.timeline || [];
+                console.log(`[Parallel] Nova Vision returned ${timelineData.length} intervals`);
+            } catch (e) {
+                console.error("[Parallel] Timeline extraction failed:", e);
+                timelineData = [];
+            }
+        })();
+
+        // ─── WAIT FOR BOTH TO FINISH ───
+        await Promise.all([transcribePromise, visionPromise]);
 
         // Map Nova output back to precise mathematical intervals (safeguard)
         const fullTimeline = intervals.map(inv => {
             // Try to find exact match first by start time
             let found = timelineData.find((t: any) => t.start === inv.start && t.end === inv.end);
-            
+
             // If no exact match, find by overlap (midpoint of interval falls within Nova's segment)
             if (!found) {
                 const mid = (inv.start + inv.end) / 2;
                 found = timelineData.find((t: any) => mid >= t.start && mid < t.end);
             }
-            
+
             // If still no match, find closest by start time
             if (!found && timelineData.length > 0) {
                 found = timelineData.reduce((closest: any, current: any) => {
@@ -272,7 +310,7 @@ Return ONLY valid JSON:
                     return currentDiff < closestDiff ? current : closest;
                 });
             }
-            
+
             return {
                 start: inv.start,
                 end: inv.end,
@@ -378,16 +416,25 @@ Return ONLY valid JSON:
         // STAGE 6 — Human-Like Review & Reshoot Direction
         // ════════════════════════════════════════════════════════════════════
         const reviewPrompt = `You are simultaneously a real viewer AND a professional video director reviewing a creator's video.
+The full video transcript is provided. For each scene, extract the approximate spoken words that fall within its timestamp range.
+
 For each scene below, write:
-1. An AUDIENCE REVIEW — 1–2 sentences written in first-person viewer voice ("I felt...", "This part made me...")
-2. WHY IT WORKED — if the engagement score is >= 65, explain what made it work (1 sentence). Otherwise "null".
-3. WHY IT FAILED — if the engagement score is < 65, explain what caused disengagement (1 sentence). Otherwise "null". MUST point out if it was a blank/static scene.
-4. A RESHOOT GUIDE with fields: delivery, visual, script, duration.
+1. AUDIO CONTENT — The specific words/sentences spoken during this scene's timestamp. Extract directly from the transcript below. If none, write "[No spoken audio]"
+2. An AUDIENCE REVIEW — 1–2 sentences written in first-person viewer voice ("I felt...", "This part made me...")
+3. WHY IT WORKED — if the engagement score is >= 65, explain what made it work (1 sentence). Otherwise "null".
+4. WHY IT FAILED — if the engagement score is < 65, explain what caused disengagement (1 sentence). Otherwise "null".
+5. VIRALITY SCORE — A score from 0-100 for this specific scene based on its hook potential, emotional resonance, shareability, and uniqueness.
+6. A DETAILED RESHOOT GUIDE with fields: delivery (specific tone/phrasing guidance), visual (camera & light direction), script (alternative script suggestion or improvement), duration (timing advice), pacing (cut speed and rhythm advice), emotion (target emotional state to convey), musicSuggestion (specific music genre or instrument recommendation for background).
+
+Full Video Transcript:
+"""${spokenTranscript}"""
 
 Scenes with engagement data:
 ${JSON.stringify(finalGroupedScenes.map((s: any) => ({
             sceneId: s.sceneId,
             timestamp: `${fmt(s.start)}–${fmt(s.end)}`,
+            startSec: s.start,
+            endSec: s.end,
             engagementScore: s.engagementScore,
             category: s.category,
             visualContent: s.sceneContent
@@ -398,11 +445,19 @@ Return ONLY valid JSON (matching this schema perfectly):
   "scenes": [
     {
       "sceneId": "S1",
-      "audienceReview": "I was immediately hooked.",
-      "whyItWorked": "Strong hook and pacing.",
+      "audioContent": "Welcome to today’s review. I’m going to show you why...",
+      "viralityScore": 82,
+      "audienceReview": "I was immediately hooked by the confident opening.",
+      "whyItWorked": "The strong opening statement and direct eye contact created instant trust.",
       "whyItFailed": null,
       "reshootGuide": {
-        "delivery": "Keep urgency", "visual": "Try a close-up", "script": "Good", "duration": "Keep as is"
+        "delivery": "Keep the confident, direct-to-camera energy. Slow down slightly on key phrases.",
+        "visual": "Try an extreme close-up on the product reveal moment. Improve key lighting.",
+        "script": "Open with a provocative question instead: 'What if this $20 product outperforms a $500 one?'",
+        "duration": "Trim by 2 seconds — cut the pause after the intro line.",
+        "pacing": "Keep fast cuts but add a 0.5s hold on the product reveal for emphasis.",
+        "emotion": "Convey genuine excitement and discovery — act as if you're sharing a secret.",
+        "musicSuggestion": "Upbeat electronic with a 120BPM build — think Sabrina Carpenter vibes without vocals."
       }
     }
   ]
@@ -415,21 +470,33 @@ Return ONLY valid JSON (matching this schema perfectly):
         );
 
         interface ReviewScene {
-            sceneId: string; audienceReview: string; whyItWorked: string | null; whyItFailed: string | null;
-            reshootGuide: { delivery: string; visual: string; script: string; duration: string };
+            sceneId: string; audioContent: string; viralityScore: number;
+            audienceReview: string; whyItWorked: string | null; whyItFailed: string | null;
+            reshootGuide: {
+                delivery: string; visual: string; script: string; duration: string;
+                pacing: string; emotion: string; musicSuggestion: string;
+            };
         }
+
+        console.log("=== NOVA REVIEW OUTPUT ===");
+        console.log(reviewRaw);
 
         const reviewData = safeJson<{ scenes: ReviewScene[] }>(reviewRaw, {
             scenes: finalGroupedScenes.map(s => ({
                 sceneId: s.sceneId,
-                audienceReview: s.engagementScore >= 65 ? "This section held my attention." : "I lost focus here, especially if it was a blank screen.",
+                audioContent: "[Audio not transcribed for this scene]",
+                viralityScore: Math.min(100, Math.max(0, Math.round(s.engagementScore * 1.1))),
+                audienceReview: s.engagementScore >= 65 ? "This section held my attention." : "I lost focus here.",
                 whyItWorked: s.engagementScore >= 65 ? "Good pacing kept engagement up." : null,
                 whyItFailed: s.engagementScore < 65 ? "Static visually and dragging pace." : null,
                 reshootGuide: {
-                    delivery: s.engagementScore >= 65 ? "Keep current energy" : "Increase energy",
-                    visual: s.engagementScore >= 65 ? "Good composition" : "Add more visuals immediately",
-                    script: s.engagementScore >= 65 ? "Effective" : "Tighten the script",
-                    duration: s.engagementScore >= 65 ? "Keep as is" : "Trim heavily"
+                    delivery: s.engagementScore >= 65 ? "Keep current energy" : "Increase speaking energy and enthusiasm",
+                    visual: s.engagementScore >= 65 ? "Good composition" : "Add B-roll or close-ups to avoid dead air",
+                    script: s.engagementScore >= 65 ? "Effective — keep as is" : "Tighten the script, cut filler words",
+                    duration: s.engagementScore >= 65 ? "Keep as is" : "Trim heavily by at least 30%",
+                    pacing: s.engagementScore >= 65 ? "Pacing is good" : "Speed up cuts, reduce pauses",
+                    emotion: s.engagementScore >= 65 ? "Authentic and engaging" : "Add more energy and expression",
+                    musicSuggestion: "Upbeat background music at low volume to maintain momentum"
                 }
             }))
         });
@@ -441,20 +508,29 @@ Return ONLY valid JSON (matching this schema perfectly):
         // ════════════════════════════════════════════════════════════════════
         const finalScenes: SceneResult[] = finalGroupedScenes.map(scene => {
             const review = reviewMap.get(scene.sceneId);
+            const sceneViralityScore = review?.viralityScore ?? Math.min(100, Math.round(scene.engagementScore * 1.05));
             return {
                 sceneId: scene.sceneId,
                 timestamp: `${fmt(scene.start)}–${fmt(scene.end)}`,
                 start: scene.start,
                 end: scene.end,
                 engagementScore: scene.engagementScore,
+                viralityScore: sceneViralityScore,
                 category: scene.category,
                 recommendation: scene.recommendation,
                 sceneContent: scene.sceneContent,
+                audioContent: review?.audioContent ?? "[No audio transcript for this scene]",
                 audienceReview: review?.audienceReview ?? "",
                 whyItWorked: review?.whyItWorked ?? null,
                 whyItFailed: review?.whyItFailed ?? null,
                 reshootGuide: review?.reshootGuide ?? {
-                    delivery: "Increase energy", visual: "Add more variation", script: "Tighten content", duration: "Trim"
+                    delivery: "Increase energy",
+                    visual: "Add more variation",
+                    script: "Tighten content",
+                    duration: "Trim",
+                    pacing: "Speed up cuts",
+                    emotion: "Express more authentic enthusiasm",
+                    musicSuggestion: "Add upbeat background music"
                 },
                 deliveryQuality: scene.deliveryQuality,
                 visualVariation: scene.visualVariation,
@@ -483,6 +559,67 @@ Return ONLY valid JSON (matching this schema perfectly):
             improvementTips.push(`Use scene ${highlights[0].sceneId} (${highlights[0].timestamp}) for thumbnail — highest engagement`);
         }
 
+        // ════════════════════════════════════════════════════════════════════
+        // STAGE 8 — Comprehensive Video Intelligence Framework Evaluation
+        // ════════════════════════════════════════════════════════════════════
+        const comprehensivePrompt = `You are a master Video Intelligence AI evaluating a video in the "${videoCategory}" category.
+Analyze the following scene-by-scene intelligence data along with the official spoken transcript to output a comprehensive 15-point evaluation framework.
+
+Exact Spoken Transcript of the Video:
+"""${spokenTranscript}"""
+
+Scenes and specific intelligence feedback:
+${JSON.stringify(finalScenes.map(s => ({ timestamp: s.timestamp, content: s.sceneContent, recommendation: s.recommendation, visualQuality: s.visualVariation, delivery: s.deliveryQuality, engagement: s.engagementScore, review: s.audienceReview })))}
+
+Based on these scenes, return ONLY a JSON response matching this exact schema:
+{
+  "categorySuitabilityScore": number (0-100, how well it fits "${videoCategory}"),
+  "hookStrength": number (0-100, based on the first scene),
+  "contentValue": number (0-100, insights and usefulness),
+  "informationDensity": number (0-100),
+  "deliveryStrength": number (0-100),
+  "visualQuality": number (0-100),
+  "editingQuality": number (0-100, based on scene variation),
+  "emotionalImpact": number (0-100),
+  "competitorBenchmark": number (0-100),
+  "contentUniqueness": number (0-100),
+  "safetyScore": number (0-100, 100 is completely safe),
+  "viralityPrediction": string (e.g. "High Viral Potential", "Average Potential", "Low Virality")
+}`;
+
+        const compRaw = await invokeNova(
+            NOVA_PRO,
+            "You are an expert AI creator coach. Output only JSON, no markdown.",
+            comprehensivePrompt
+        );
+
+        const compParsed = safeJson<any>(compRaw, {
+            categorySuitabilityScore: 80,
+            hookStrength: 75,
+            contentValue: 70,
+            informationDensity: 65,
+            deliveryStrength: 70,
+            visualQuality: 70,
+            editingQuality: 65,
+            emotionalImpact: 60,
+            competitorBenchmark: 70,
+            contentUniqueness: 60,
+            safetyScore: 100,
+            viralityPrediction: avgScore >= 75 ? "High Viral Potential" : "Average Viral Potential"
+        });
+
+        // Compute Virality Score based on the formula
+        const viralityScore = Math.round(
+            avgScore * 0.18 +
+            (compParsed.contentValue || 70) * 0.18 +
+            (compParsed.hookStrength || 70) * 0.15 +
+            (compParsed.deliveryStrength || 70) * 0.12 +
+            (compParsed.visualQuality || 70) * 0.10 +
+            (compParsed.editingQuality || 70) * 0.10 +
+            (compParsed.contentUniqueness || 70) * 0.09 +
+            (compParsed.categorySuitabilityScore || 80) * 0.08
+        );
+
         return NextResponse.json({
             success: true,
             videoMeta: {
@@ -498,6 +635,19 @@ Return ONLY valid JSON (matching this schema perfectly):
             lowEngagementCount: lowEngagementScenes.length,
             highEngagementCount: highlights.length,
             improvementTips,
+            categorySuitabilityScore: compParsed.categorySuitabilityScore || 80,
+            hookStrength: compParsed.hookStrength || 75,
+            contentValue: compParsed.contentValue || 70,
+            informationDensity: compParsed.informationDensity || 65,
+            deliveryStrength: compParsed.deliveryStrength || 70,
+            visualQuality: compParsed.visualQuality || 70,
+            editingQuality: compParsed.editingQuality || 65,
+            emotionalImpact: compParsed.emotionalImpact || 60,
+            competitorBenchmark: compParsed.competitorBenchmark || 70,
+            contentUniqueness: compParsed.contentUniqueness || 60,
+            safetyScore: compParsed.safetyScore || 100,
+            viralityScore,
+            viralityPrediction: compParsed.viralityPrediction || (viralityScore >= 75 ? "High Viral Potential" : "Average Viral Potential"),
             analysisTimestamp: new Date().toISOString(),
         });
     } catch (err) {
