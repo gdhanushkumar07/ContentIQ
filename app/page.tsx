@@ -46,7 +46,7 @@ function AmbientBlobs() {
 
 // ─── Navigation Items ──────────────────────────────────────────────────────────
 const navItems = [
-  { name: 'Home', url: '#hero', icon: Home },
+  { name: 'Home', url: '#home', icon: Home },
   { name: 'Features', url: '#features', icon: Eye },
   { name: 'How It Works', url: '#how-it-works', icon: Briefcase },
   { name: 'Tech Stack', url: '#tech-stack', icon: FileText },
@@ -66,7 +66,7 @@ function HeroSection() {
   }
 
   return (
-    <section id="hero" onMouseMove={handleMouseMove}
+    <section id="home" onMouseMove={handleMouseMove}
       style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '120px 24px 100px', position: 'relative', zIndex: 1, overflow: 'hidden' }}>
 
       <motion.div className="hero-glow"
@@ -145,7 +145,7 @@ function FooterCTA() {
         className="glass-card"
         style={{ maxWidth: 860, margin: '0 auto', padding: '80px 60px', textAlign: 'center', background: 'linear-gradient(135deg, rgba(0,212,255,0.04), rgba(124,58,237,0.06))' }}>
         <motion.div animate={{ rotate: [0, 360] }} transition={{ duration: 20, repeat: Infinity, ease: 'linear' }} style={{ display: 'inline-block', marginBottom: 24 }}>
-          <Sparkles size={40} color="#00d4ff" />
+          <img src="/logo.png" alt="ContentIQ Logo" className="h-[40px] w-[40px] object-contain" />
         </motion.div>
         <h2 style={{ fontSize: 'clamp(28px, 4vw, 52px)', fontWeight: 800, letterSpacing: '-1px', marginBottom: 20 }}>
           Ready to make content go <span className="gradient-text">viral?</span>
@@ -166,8 +166,8 @@ function FooterCTA() {
       </motion.div>
       <div style={{ textAlign: 'center', marginTop: 60, color: 'rgba(255,255,255,0.2)', fontSize: 13 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 12 }}>
-          <div style={{ width: 24, height: 24, borderRadius: 7, background: 'linear-gradient(135deg, #00d4ff, #7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Sparkles size={12} color="#fff" />
+          <div style={{ width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <img src="/logo.png" alt="ContentIQ Logo" className="h-4 w-4 object-contain" />
           </div>
           <span style={{ fontWeight: 600, color: 'rgba(255,255,255,0.4)' }}>ContentIQ</span>
         </div>
@@ -186,8 +186,8 @@ export default function HomePage() {
       <NavBar items={navItems} />
       <HeroSection />
       <div id="features"><ScrollFeatureCards /></div>
-      <HowItWorksTimeline />
-      <TechStackLayered />
+      <div id="how-it-works"><HowItWorksTimeline /></div>
+      <div id="tech-stack"><TechStackLayered /></div>
       <FooterCTA />
     </div>
   )

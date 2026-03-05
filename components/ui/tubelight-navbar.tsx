@@ -17,7 +17,7 @@ interface NavBarProps {
 }
 
 export function NavBar({ items, className = '' }: NavBarProps) {
-  const [activeTab, setActiveTab] = useState(items[0]?.name)
+  const [activeNav, setActiveNav] = useState('home')
   const [scrolled, setScrolled] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
 
@@ -29,39 +29,30 @@ export function NavBar({ items, className = '' }: NavBarProps) {
 
   // Track which section is in view for active highlight
   useEffect(() => {
-    const sectionIds = items
-      .map((item) => {
-        if (item.url.startsWith('#')) return item.url.slice(1)
-        if (item.url === '/') return 'hero'
-        return null
-      })
-      .filter(Boolean) as string[]
+    const sections = ["home", "features", "how-it-works", "tech-stack"]
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            const matchingItem = items.find((item) => {
-              const id = item.url.startsWith('#') ? item.url.slice(1) : item.url === '/' ? 'hero' : ''
-              return id === entry.target.id
-            })
-            if (matchingItem) setActiveTab(matchingItem.name)
+            setActiveNav(entry.target.id)
           }
         })
       },
-      { threshold: 0.3, rootMargin: '-80px 0px -40% 0px' }
+      { threshold: 0.5 }
     )
 
-    sectionIds.forEach((id) => {
+    sections.forEach((id) => {
       const el = document.getElementById(id)
       if (el) observer.observe(el)
     })
 
     return () => observer.disconnect()
-  }, [items])
+  }, [])
 
   const handleNavClick = (item: NavItem) => {
-    setActiveTab(item.name)
+    const navId = item.url.startsWith('#') ? item.url.slice(1) : ''
+    if (navId) setActiveNav(navId)
     setIsMobileOpen(false)
   }
 
@@ -70,57 +61,28 @@ export function NavBar({ items, className = '' }: NavBarProps) {
       initial={{ y: -80, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-      className={`fixed left-0 right-0 z-[100] ${className}`}
-      style={{ top: 0 }}
+      className={`fixed top-6 left-0 right-0 z-[100] ${className}`}
     >
-      <div
-        className="mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-8"
-        style={{
-          maxWidth: 1280,
-          height: 72,
-        }}
-      >
-        {/* ── Logo ─────────────────────────────────────────────── */}
+      <div className="max-w-7xl mx-auto flex justify-center px-6 w-full pointer-events-none">
+        <div className="flex items-center justify-between gap-4 px-4 py-2 rounded-full backdrop-blur-xl bg-white/5 border border-white/10 shadow-lg pointer-events-auto">
+          {/* ── Logo ─────────────────────────────────────────────── */}
         <motion.div
           className="flex items-center gap-2.5 shrink-0"
           whileHover={{ scale: 1.03 }}
         >
-          <div
-            className="flex items-center justify-center"
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 10,
-              background: 'linear-gradient(135deg, #00d4ff, #7c3aed)',
-            }}
-          >
-            <Sparkles size={18} color="#fff" />
-          </div>
+          <Link href="#home" className="flex items-center gap-2.5">
+          <img src="/logo.png" alt="ContentIQ Logo" className="h-8 w-8 object-contain" />
           <span className="text-lg font-bold tracking-tight">
             Content<span className="gradient-text">IQ</span>
           </span>
+          </Link>
         </motion.div>
 
-        {/* ── Center pill — Desktop ────────────────────────────── */}
-        <div
-          className="hidden md:flex items-center gap-1 relative"
-          style={{
-            background: scrolled
-              ? 'rgba(255,255,255,0.04)'
-              : 'rgba(255,255,255,0.03)',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            borderRadius: 100,
-            padding: '4px 6px',
-            boxShadow: scrolled
-              ? '0 4px 30px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)'
-              : '0 2px 20px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.04)',
-            transition: 'background 0.3s ease, box-shadow 0.3s ease',
-          }}
-        >
+        {/* ── Center Navigation Items ────────────────────────────── */}
+        <div className="hidden md:flex items-center gap-6">
           {items.map((item) => {
-            const isActive = activeTab === item.name
+            const navId = item.url.startsWith('#') ? item.url.slice(1) : ''
+            const isActive = activeNav === navId
             const Icon = item.icon
 
             return (
@@ -128,24 +90,20 @@ export function NavBar({ items, className = '' }: NavBarProps) {
                 key={item.name}
                 href={item.url}
                 onClick={() => handleNavClick(item)}
-                className="relative px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 cursor-pointer select-none"
-                style={{
-                  color: isActive
-                    ? '#ffffff'
-                    : 'rgba(255,255,255,0.5)',
-                  zIndex: 1,
-                }}
+                className={`relative px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 select-none flex items-center gap-2 ${
+                  isActive
+                    ? 'bg-white/10 text-white shadow-inner'
+                    : 'text-white/70 hover:text-white'
+                }`}
               >
                 {isActive && (
                   <motion.div
                     layoutId="tubelight-highlight"
-                    className="absolute inset-0 rounded-full"
+                    className="absolute inset-0 rounded-full pointer-events-none"
                     style={{
-                      background:
-                        'linear-gradient(135deg, rgba(56,189,248,0.15), rgba(139,92,246,0.15))',
                       border: '1px solid rgba(255,255,255,0.1)',
                       boxShadow:
-                        '0 0 20px rgba(56,189,248,0.2), 0 0 40px rgba(139,92,246,0.1), inset 0 1px 0 rgba(255,255,255,0.1)',
+                        '0 0 20px rgba(56,189,248,0.2), 0 0 40px rgba(139,92,246,0.1)',
                     }}
                     transition={{
                       type: 'spring',
@@ -161,51 +119,27 @@ export function NavBar({ items, className = '' }: NavBarProps) {
               </a>
             )
           })}
-
-          {/* Tubelight glow above the pill */}
-          <div
-            className="absolute -top-px left-1/2 -translate-x-1/2 pointer-events-none"
-            style={{
-              width: '40%',
-              height: 2,
-              background:
-                'linear-gradient(90deg, transparent, rgba(56,189,248,0.6), rgba(139,92,246,0.6), transparent)',
-              borderRadius: 100,
-              filter: 'blur(1px)',
-            }}
-          />
         </div>
 
+        {/* ── Spacer ───────────────────────────────────────────── */}
+        <div className="flex-1 hidden md:block"></div>
+
         {/* ── Auth buttons — Desktop ──────────────────────────── */}
-        <div className="hidden md:flex items-center gap-3 shrink-0">
+        <div className="hidden md:flex items-center gap-3 ml-6">
           <Link href="/login">
             <motion.button
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
-              className="text-sm font-semibold cursor-pointer"
-              style={{
-                padding: '9px 22px',
-                color: 'rgba(255,255,255,0.7)',
-                background: 'transparent',
-                border: '1px solid rgba(255,255,255,0.12)',
-                borderRadius: 10,
-              }}
+              className="px-4 py-2 rounded-lg border border-white/15 text-white/80 hover:bg-white/10 text-sm transition-colors"
             >
               Sign In
             </motion.button>
           </Link>
           <Link href="/signup">
             <motion.button
-              className="glow-btn text-sm font-semibold cursor-pointer"
+              className="glow-btn px-5 py-2 rounded-lg font-medium text-sm flex items-center justify-center gap-2 text-white"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.97 }}
-              style={{
-                padding: '10px 22px',
-                color: '#fff',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-              }}
             >
               Get Early Access <ChevronRight size={16} />
             </motion.button>
@@ -228,6 +162,7 @@ export function NavBar({ items, className = '' }: NavBarProps) {
         >
           {isMobileOpen ? <X size={20} /> : <Menu size={20} />}
         </motion.button>
+        </div>
       </div>
 
       {/* ── Mobile dropdown ────────────────────────────────────── */}
@@ -238,7 +173,7 @@ export function NavBar({ items, className = '' }: NavBarProps) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.97 }}
             transition={{ duration: 0.25, ease: 'easeOut' }}
-            className="md:hidden mx-4 mt-2 rounded-2xl overflow-hidden"
+            className="md:hidden absolute top-full left-0 right-0 mt-2 rounded-2xl overflow-hidden"
             style={{
               background: 'rgba(8,15,32,0.95)',
               backdropFilter: 'blur(24px)',
@@ -249,7 +184,8 @@ export function NavBar({ items, className = '' }: NavBarProps) {
           >
             <div className="p-4 flex flex-col gap-1">
               {items.map((item) => {
-                const isActive = activeTab === item.name
+                const navId = item.url.startsWith('#') ? item.url.slice(1) : ''
+                const isActive = activeNav === navId
                 const Icon = item.icon
                 return (
                   <a
@@ -311,27 +247,6 @@ export function NavBar({ items, className = '' }: NavBarProps) {
         )}
       </AnimatePresence>
 
-      {/* ── Full-width bottom border — appears on scroll ───── */}
-      <motion.div
-        className="absolute bottom-0 left-0 right-0 h-px"
-        style={{
-          background: scrolled
-            ? 'linear-gradient(90deg, transparent 5%, rgba(255,255,255,0.06) 50%, transparent 95%)'
-            : 'transparent',
-          transition: 'background 0.3s ease',
-        }}
-      />
-
-      {/* ── Navbar backdrop — appears on scroll ────────────── */}
-      <motion.div
-        className="absolute inset-0 -z-10"
-        style={{
-          background: scrolled ? 'rgba(6,6,16,0.8)' : 'transparent',
-          backdropFilter: scrolled ? 'blur(20px)' : 'none',
-          WebkitBackdropFilter: scrolled ? 'blur(20px)' : 'none',
-          transition: 'all 0.3s ease',
-        }}
-      />
     </motion.nav>
   )
 }

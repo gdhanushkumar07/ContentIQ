@@ -49,26 +49,24 @@ export const Timeline = ({ data }: { data: TimelineEntry[] }) => {
         {data.map((item, index) => (
           <motion.div
             key={index}
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: "-10%" }}
-            transition={{ duration: 0.7, delay: index * 0.1 }}
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
             className="flex justify-start pt-10 md:pt-40 md:gap-10 group"
           >
             <div className="sticky flex flex-col md:flex-row z-40 items-center top-40 self-start max-w-xs lg:max-w-sm md:w-full">
               <div className="h-10 absolute left-3 md:left-3 w-10 rounded-full bg-black/50 border border-neutral-700/50 backdrop-blur-sm flex items-center justify-center">
-                <div className="relative w-6 h-6 rounded-full bg-blue-500/20 border border-blue-400/40 shadow-[0_0_20px_rgba(59,130,246,0.4)] flex items-center justify-center group-hover:shadow-[0_0_30px_rgba(59,130,246,0.6)] transition-all duration-300">
-                  <div className="h-2 w-2 rounded-full bg-blue-400 animate-pulse absolute" />
-                  <div className="h-2 w-2 rounded-full bg-blue-300" />
+                <div className="w-6 h-6 rounded-full bg-blue-500/20 border border-blue-400/40 backdrop-blur shadow-[0_0_20px_rgba(59,130,246,0.6)]">
                 </div>
               </div>
-              <h3 className="hidden md:block md:pl-20 text-5xl font-semibold tracking-tight bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent group-hover:scale-[1.03] transition-all duration-300 origin-left">
+              <h3 className="hidden md:block md:pl-20 text-5xl font-semibold tracking-tight bg-gradient-to-r from-white via-blue-200 to-purple-300 bg-clip-text text-transparent">
                 {item.title}
               </h3>
             </div>
 
             <div className="relative pl-20 pr-4 md:pl-4 w-full">
-              <h3 className="md:hidden block text-4xl mb-4 text-left font-semibold tracking-tight bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent group-hover:scale-[1.03] transition-all duration-300 origin-left">
+              <h3 className="md:hidden block text-4xl mb-4 text-left font-semibold tracking-tight bg-gradient-to-r from-white via-blue-200 to-purple-300 bg-clip-text text-transparent">
                 {item.title}
               </h3>
               {item.content}{" "}
@@ -79,7 +77,7 @@ export const Timeline = ({ data }: { data: TimelineEntry[] }) => {
           style={{
             height: height + "px",
           }}
-          className="absolute md:left-8 left-8 top-0 overflow-hidden w-[2px] bg-gradient-to-b from-blue-400/50 via-purple-400/40 to-transparent"
+          className="absolute md:left-8 left-8 top-0 overflow-hidden bg-gradient-to-b from-blue-500/60 via-purple-500/40 to-transparent w-[2px]"
         >
           <motion.div
             style={{

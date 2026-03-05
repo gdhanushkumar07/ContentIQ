@@ -14,7 +14,7 @@ import {
 
 export default function TechStackLayered() {
   return (
-    <section id="stack" className="relative w-full py-36 z-10 overflow-visible">
+    <section id="tech-stack" className="relative w-full py-36 z-10 overflow-visible scroll-mt-32">
       <div className="max-w-7xl mx-auto px-6 overflow-visible">
 
         {/* Section Header */}
