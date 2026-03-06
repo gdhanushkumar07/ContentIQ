@@ -83,9 +83,12 @@ function HeroSection() {
       <motion.h1
         initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.9, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-        style={{ fontSize: 'clamp(44px, 7.5vw, 92px)', fontWeight: 900, lineHeight: 1.05, letterSpacing: '-2.5px', maxWidth: 920, marginBottom: 28, color: '#FFFFFF' }}>
+        className="font-mokoto text-6xl md:text-7xl font-bold tracking-wide"
+        style={{ lineHeight: 1.05, maxWidth: 920, marginBottom: 28, color: '#FFFFFF' }}>
         Turn Raw Content<br />
-        <span className="gradient-text">Into Viral Impact</span>
+        <span className="bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
+          Into Viral Impact
+        </span>
       </motion.h1>
 
       <motion.p initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.3, ease: 'easeOut' }}

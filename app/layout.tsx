@@ -1,12 +1,9 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
 import './globals.css'
 import { Providers } from './providers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { ThemeProvider } from '@/components/ThemeProvider'
-
-const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'ContentIQ — Raw Footage to Viral Gold',
@@ -22,7 +19,7 @@ export default async function RootLayout({
   return (
     // suppressHydrationWarning prevents SSR/client mismatch for the `dark` class
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} antialiased`} style={{ background: 'var(--bg-page)', color: 'var(--text-primary)' }}>
+      <body className="antialiased" style={{ background: 'var(--bg-page)', color: 'var(--text-primary)' }}>
         <ThemeProvider>
           <Providers session={session}>
             {children}
