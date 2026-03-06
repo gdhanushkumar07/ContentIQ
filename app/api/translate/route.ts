@@ -61,58 +61,58 @@ export async function POST(req: Request) {
         const textBytes = await file.arrayBuffer();
         sourceText = new TextDecoder().decode(textBytes);
         if (!sourceText.trim()) throw new Error("Text file is empty");
-      }
-    } else if (file) {
-      // Audio processing
-      // a. Upload S3
-      const validFile = file as File;
-      const bytes = await validFile.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-      const key = `audio-uploads/${Date.now()}-${validFile.name.replace(/[^a-zA-Z0-9.\-_]/g, '')}`;
-      const bucketName = process.env.S3_BUCKET_NAME!;
+      } else if (isAudio) {
+        // Audio processing
+        // a. Upload S3
+        const validFile = file as File;
+        const bytes = await validFile.arrayBuffer();
+        const buffer = Buffer.from(bytes);
+        const key = `audio-uploads/${Date.now()}-${validFile.name.replace(/[^a-zA-Z0-9.\-_]/g, '')}`;
+        const bucketName = process.env.S3_BUCKET_NAME!;
 
-      await s3.send(new PutObjectCommand({
-        Bucket: bucketName,
-        Key: key,
-        Body: buffer,
-        ContentType: validFile.type,
-      }));
-
-      // b. Transcribe
-      const mediaUri = `s3://${bucketName}/${key}`;
-      const jobName = `transcribe-job-${Date.now()}`;
-
-      const transcribeLanguageCode = sourceLanguage === "auto" ? "en-US" : (sourceLanguage === "en" ? "en-US" : sourceLanguage);
-
-      await transcribe.send(new StartTranscriptionJobCommand({
-        TranscriptionJobName: jobName,
-        Media: { MediaFileUri: mediaUri },
-        LanguageCode: transcribeLanguageCode as any,
-      }));
-
-      // wait for job to complete
-      let jobStatus = "IN_PROGRESS";
-      let transcriptUri = "";
-      while (jobStatus === "IN_PROGRESS" || jobStatus === "QUEUED") {
-        await new Promise((resolve) => setTimeout(resolve, 3000));
-        const st = await transcribe.send(new GetTranscriptionJobCommand({
-          TranscriptionJobName: jobName
+        await s3.send(new PutObjectCommand({
+          Bucket: bucketName,
+          Key: key,
+          Body: buffer,
+          ContentType: validFile.type,
         }));
-        jobStatus = st.TranscriptionJob?.TranscriptionJobStatus || "FAILED";
-        if (jobStatus === "COMPLETED") {
-          transcriptUri = st.TranscriptionJob?.Transcript?.TranscriptFileUri || "";
-        }
-        if (jobStatus === "FAILED") {
-          throw new Error("Transcription failed: " + st.TranscriptionJob?.FailureReason);
-        }
-      }
 
-      // c. Fetch Transcript
-      if (!transcriptUri) throw new Error("No transcript URI returned");
-      const transcriptRes = await fetch(transcriptUri);
-      const transcriptData = await transcriptRes.json();
-      sourceText = transcriptData.results.transcripts[0]?.transcript || "";
-      if (!sourceText) throw new Error("Transcription resulted in empty text");
+        // b. Transcribe
+        const mediaUri = `s3://${bucketName}/${key}`;
+        const jobName = `transcribe-job-${Date.now()}`;
+
+        const transcribeLanguageCode = sourceLanguage === "auto" ? "en-US" : (sourceLanguage === "en" ? "en-US" : sourceLanguage);
+
+        await transcribe.send(new StartTranscriptionJobCommand({
+          TranscriptionJobName: jobName,
+          Media: { MediaFileUri: mediaUri },
+          LanguageCode: transcribeLanguageCode as any,
+        }));
+
+        // wait for job to complete
+        let jobStatus = "IN_PROGRESS";
+        let transcriptUri = "";
+        while (jobStatus === "IN_PROGRESS" || jobStatus === "QUEUED") {
+          await new Promise((resolve) => setTimeout(resolve, 3000));
+          const st = await transcribe.send(new GetTranscriptionJobCommand({
+            TranscriptionJobName: jobName
+          }));
+          jobStatus = st.TranscriptionJob?.TranscriptionJobStatus || "FAILED";
+          if (jobStatus === "COMPLETED") {
+            transcriptUri = st.TranscriptionJob?.Transcript?.TranscriptFileUri || "";
+          }
+          if (jobStatus === "FAILED") {
+            throw new Error("Transcription failed: " + st.TranscriptionJob?.FailureReason);
+          }
+        }
+
+        // c. Fetch Transcript
+        if (!transcriptUri) throw new Error("No transcript URI returned");
+        const transcriptRes = await fetch(transcriptUri);
+        const transcriptData = await transcriptRes.json();
+        sourceText = transcriptData.results.transcripts[0]?.transcript || "";
+        if (!sourceText) throw new Error("Transcription resulted in empty text");
+      }
     }
 
     // 2. Translate Text

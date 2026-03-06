@@ -6,7 +6,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { s3, bedrock, lambda } from "@/lib/aws";
 
 export const runtime = "nodejs";
-export const maxDuration = 120;
+export const maxDuration = 300; // Allow 5 full minutes for Lambda + Nova Pro Pipeline
 
 // ─── Model IDs from environment variables ──
 const NOVA_LITE = process.env.NOVA_LITE_MODEL_ID || "us.amazon.nova-lite-v1:0";
@@ -189,48 +189,11 @@ export async function POST(req: Request) {
         );
 
         // ════════════════════════════════════════════════════════════════════
-        // STAGE 2 — Audio Transcription via Lambda
+        // STAGE 2 & 3 — Parallel Audio & Vision Analysis
         // ════════════════════════════════════════════════════════════════════
         let spokenTranscript = "No audio transcript available.";
-        try {
-            const lambdaName = process.env.TRANSCRIBE_LAMBDA_NAME;
-            if (lambdaName) {
-                console.log(`Invoking Transcript Lambda: ${lambdaName} for ${s3Key}`);
-                const invokeCmd = new InvokeCommand({
-                    FunctionName: lambdaName,
-                    InvocationType: "RequestResponse",
-                    Payload: JSON.stringify({
-                        body: JSON.stringify({ s3Key, bucketName: bucket })
-                    })
-                });
+        let timelineData: any[] = [];
 
-                // Note: The Lambda might take up to 60-90s. Vercel maxDuration is 120s.
-                // Depending on the video size, this might be tight, but handled.
-                const lambdaRes = await lambda.send(invokeCmd);
-                const responsePayload = JSON.parse(new TextDecoder().decode(lambdaRes.Payload));
-
-                // AWS Lambda returns data inside the body string for API Gateway style responses
-                if (responsePayload.statusCode === 200 && responsePayload.body) {
-                    const parsedBody = JSON.parse(responsePayload.body);
-                    if (parsedBody.transcript) {
-                        spokenTranscript = parsedBody.transcript;
-                        console.log(`Successfully transcribed audio: ${spokenTranscript.substring(0, 100)}...`);
-                    }
-                } else {
-                    console.warn("Lambda returned an error or empty transcript:", responsePayload);
-                }
-            } else {
-                console.warn("Skipping transcription - TRANSCRIBE_LAMBDA_NAME is not set in environment.");
-            }
-        } catch (lambdaErr) {
-            console.error("Failed to invoke transcription Lambda:", lambdaErr);
-            // Fallback gracefully if transcription fails, don't crash the whole pipeline
-        }
-
-        // ════════════════════════════════════════════════════════════════════
-        // STAGE 3 — Granular Timeline Extraction (Multimodal)
-        // Extract data for every exact interval based on real duration
-        // ════════════════════════════════════════════════════════════════════
         // Determine interval size: 1s for <30s, 2s for <120s, scaling up safely
         const intervalSize = realDuration <= 30 ? 1 : realDuration <= 120 ? 2 : Math.max(3, Math.ceil(realDuration / 60));
         const intervals = [];
@@ -271,33 +234,62 @@ Return ONLY valid JSON:
   ]
 }`;
 
-        let timelineData;
-        try {
-            const timelineRaw = await invokeNovaWithImages(
-                NOVA_LITE,
-                "You are a multimodal video timeline analyzer. Analyze each frame image separately based on its timestamp. Output only JSON.",
-                timelinePrompt,
-                videoFrames.slice(0, 20) // Send up to 20 frames
-            );
+        // ─── Promise 1: Audio Transcription (Lambda) ───
+        const transcribePromise = (async () => {
+            try {
+                const lambdaName = process.env.TRANSCRIBE_LAMBDA_NAME;
+                if (!lambdaName) {
+                    console.warn("Skipping transcription - TRANSCRIBE_LAMBDA_NAME is not set.");
+                    return;
+                }
+                console.log(`[Parallel] Invoking Transcript Lambda: ${lambdaName} for ${s3Key}`);
+                const invokeCmd = new InvokeCommand({
+                    FunctionName: lambdaName,
+                    InvocationType: "RequestResponse",
+                    Payload: JSON.stringify({
+                        body: JSON.stringify({ s3Key, bucketName: bucket })
+                    })
+                });
 
-            console.log("=== RAW STRING FROM NOVA ===");
-            console.log(timelineRaw);
-            console.log("=== RAW STRING LENGTH ===", timelineRaw.length);
+                const lambdaRes = await lambda.send(invokeCmd);
+                const responsePayload = JSON.parse(new TextDecoder().decode(lambdaRes.Payload));
 
-            const parsed = safeJson<{ timeline: any[] }>(timelineRaw, { timeline: [] });
-            console.log("=== PARSED OBJECT ===");
-            console.log(JSON.stringify(parsed, null, 2));
-
-            timelineData = parsed.timeline || [];
-
-            console.log(`=== NOVA RETURNED ${timelineData.length} INTERVALS (Expected: ${intervals.length}) ===`);
-            if (timelineData.length < intervals.length) {
-                console.warn(`⚠️ WARNING: Nova only returned ${timelineData.length} intervals but we expected ${intervals.length}`);
+                if (responsePayload.statusCode === 200 && responsePayload.body) {
+                    const parsedBody = JSON.parse(responsePayload.body);
+                    if (parsedBody.transcript) {
+                        spokenTranscript = parsedBody.transcript;
+                        console.log(`[Parallel] Transcribed audio successfully (${spokenTranscript.length} chars)`);
+                    }
+                } else {
+                    console.warn("[Parallel] Lambda returned an error or empty transcript:", responsePayload);
+                }
+            } catch (lambdaErr) {
+                console.error("[Parallel] Failed to invoke transcription Lambda:", lambdaErr);
             }
-        } catch (e) {
-            console.error("Timeline extraction failed:", e);
-            timelineData = [];
-        }
+        })();
+
+        // ─── Promise 2: Vision Analysis (Nova) ───
+        const visionPromise = (async () => {
+            try {
+                console.log(`[Parallel] Invoking Nova Multimodal for ${videoFrames.length} frames`);
+                const timelineRaw = await invokeNovaWithImages(
+                    NOVA_LITE,
+                    "You are a multimodal video timeline analyzer. Analyze each frame image separately based on its timestamp. Output only JSON.",
+                    timelinePrompt,
+                    videoFrames.slice(0, 20)
+                );
+
+                const parsed = safeJson<{ timeline: any[] }>(timelineRaw, { timeline: [] });
+                timelineData = parsed.timeline || [];
+                console.log(`[Parallel] Nova Vision returned ${timelineData.length} intervals`);
+            } catch (e) {
+                console.error("[Parallel] Timeline extraction failed:", e);
+                timelineData = [];
+            }
+        })();
+
+        // ─── WAIT FOR BOTH TO FINISH ───
+        await Promise.all([transcribePromise, visionPromise]);
 
         // Map Nova output back to precise mathematical intervals (safeguard)
         const fullTimeline = intervals.map(inv => {
@@ -485,6 +477,9 @@ Return ONLY valid JSON (matching this schema perfectly):
                 pacing: string; emotion: string; musicSuggestion: string;
             };
         }
+
+        console.log("=== NOVA REVIEW OUTPUT ===");
+        console.log(reviewRaw);
 
         const reviewData = safeJson<{ scenes: ReviewScene[] }>(reviewRaw, {
             scenes: finalGroupedScenes.map(s => ({

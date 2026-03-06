@@ -195,12 +195,12 @@ export async function startVideoAnalysis(file: File) {
         store.setState({ stage: 2 })
         const stageTimer = setInterval(() => {
             const currentStage = videoIntelligenceStore.getState().stage;
-            if (currentStage >= 9 || currentStage === 0) {
+            if (currentStage >= 7 || currentStage === 0) {
                 clearInterval(stageTimer);
                 return;
             }
             store.setState({ stage: currentStage + 1 });
-        }, 3200)
+        }, 2600)
 
         const resAnalyze = await fetch('/api/analyze-video', {
             method: 'POST',
@@ -215,9 +215,9 @@ export async function startVideoAnalysis(file: File) {
             store.setState({ error: dataAnalyze.error ?? 'Analysis failed', stage: 0 });
             return;
         }
-        store.setState({ stage: 10 });
+        store.setState({ stage: 8 });
         await new Promise(r => setTimeout(r, 600));
-        store.setState({ result: dataAnalyze, stage: 11 });
+        store.setState({ result: dataAnalyze, stage: 9 });
 
     } catch (err) {
         store.setState({ error: 'Analysis error: ' + String(err), stage: 0 });

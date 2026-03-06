@@ -70,112 +70,101 @@ export function NavBar({ items, className = '' }: NavBarProps) {
       <div className="max-w-7xl mx-auto flex justify-center px-6 w-full pointer-events-none">
         <div className="flex items-center justify-between gap-4 px-4 py-2 rounded-full backdrop-blur-xl bg-white/5 border border-white/10 shadow-lg pointer-events-auto">
           {/* ── Logo ─────────────────────────────────────────────── */}
-        <motion.div
-          className="flex items-center gap-2.5 shrink-0"
-          whileHover={{ scale: 1.03 }}
-        >
-          <Link href="#home" className="flex items-center gap-2.5">
-          <div
-            className="flex items-center justify-center"
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 10,
-              background: 'linear-gradient(135deg, #00d4ff, #7c3aed)',
-            }}
+          <motion.div
+            className="flex items-center gap-2.5 shrink-0"
+            whileHover={{ scale: 1.03 }}
           >
-            <Sparkles size={18} color="#fff" />
-          </div>
-          <span className="text-lg font-bold tracking-tight">
-            Content<span className="gradient-text">IQ</span>
-          </span>
-          </Link>
-        </motion.div>
+            <Link href="#home" className="flex items-center gap-2.5">
+              <img src="/logo.png" alt="ContentIQ Logo" className="h-[36px] object-contain" />
+              <span className="text-lg font-bold tracking-tight text-white">
+                Content<span className="gradient-text">IQ</span>
+              </span>
+            </Link>
+          </motion.div>
 
-        {/* ── Center Navigation Items ────────────────────────────── */}
-        <div className="hidden md:flex items-center gap-6">
-          {items.map((item) => {
-            const navId = item.url.startsWith('#') ? item.url.slice(1) : ''
-            const isActive = activeNav === navId
-            const Icon = item.icon
+          {/* ── Center Navigation Items ────────────────────────────── */}
+          <div className="hidden md:flex items-center gap-6">
+            {items.map((item) => {
+              const navId = item.url.startsWith('#') ? item.url.slice(1) : ''
+              const isActive = activeNav === navId
+              const Icon = item.icon
 
-            return (
-              <a
-                key={item.name}
-                href={item.url}
-                onClick={() => handleNavClick(item)}
-                className={`relative px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 select-none flex items-center gap-2 ${
-                  isActive
+              return (
+                <a
+                  key={item.name}
+                  href={item.url}
+                  onClick={() => handleNavClick(item)}
+                  className={`relative px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 select-none flex items-center gap-2 ${isActive
                     ? 'bg-white/10 text-white shadow-inner'
                     : 'text-white/70 hover:text-white'
-                }`}
+                    }`}
+                >
+                  {isActive && (
+                    <motion.div
+                      layoutId="tubelight-highlight"
+                      className="absolute inset-0 rounded-full pointer-events-none"
+                      style={{
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        boxShadow:
+                          '0 0 20px rgba(56,189,248,0.2), 0 0 40px rgba(139,92,246,0.1)',
+                      }}
+                      transition={{
+                        type: 'spring',
+                        stiffness: 350,
+                        damping: 30,
+                      }}
+                    />
+                  )}
+                  <span className="relative z-10 flex items-center gap-2">
+                    <Icon size={16} />
+                    <span className="hidden lg:inline">{item.name}</span>
+                  </span>
+                </a>
+              )
+            })}
+          </div>
+
+          {/* ── Spacer ───────────────────────────────────────────── */}
+          <div className="flex-1 hidden md:block"></div>
+
+          {/* ── Auth buttons — Desktop ──────────────────────────── */}
+          <div className="hidden md:flex items-center gap-3 ml-6">
+            <Link href="/login">
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                className="px-4 py-2 rounded-lg border border-white/15 text-white/80 hover:bg-white/10 text-sm transition-colors"
               >
-                {isActive && (
-                  <motion.div
-                    layoutId="tubelight-highlight"
-                    className="absolute inset-0 rounded-full pointer-events-none"
-                    style={{
-                      border: '1px solid rgba(255,255,255,0.1)',
-                      boxShadow:
-                        '0 0 20px rgba(56,189,248,0.2), 0 0 40px rgba(139,92,246,0.1)',
-                    }}
-                    transition={{
-                      type: 'spring',
-                      stiffness: 350,
-                      damping: 30,
-                    }}
-                  />
-                )}
-                <span className="relative z-10 flex items-center gap-2">
-                  <Icon size={16} />
-                  <span className="hidden lg:inline">{item.name}</span>
-                </span>
-              </a>
-            )
-          })}
-        </div>
+                Sign In
+              </motion.button>
+            </Link>
+            <Link href="/signup">
+              <motion.button
+                className="glow-btn px-5 py-2 rounded-lg font-medium text-sm flex items-center justify-center gap-2 text-white"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                Get Early Access <ChevronRight size={16} />
+              </motion.button>
+            </Link>
+          </div>
 
-        {/* ── Spacer ───────────────────────────────────────────── */}
-        <div className="flex-1 hidden md:block"></div>
-
-        {/* ── Auth buttons — Desktop ──────────────────────────── */}
-        <div className="hidden md:flex items-center gap-3 ml-6">
-          <Link href="/login">
-            <motion.button
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              className="px-4 py-2 rounded-lg border border-white/15 text-white/80 hover:bg-white/10 text-sm transition-colors"
-            >
-              Sign In
-            </motion.button>
-          </Link>
-          <Link href="/signup">
-            <motion.button
-              className="glow-btn px-5 py-2 rounded-lg font-medium text-sm flex items-center justify-center gap-2 text-white"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.97 }}
-            >
-              Get Early Access <ChevronRight size={16} />
-            </motion.button>
-          </Link>
-        </div>
-
-        {/* ── Mobile hamburger ────────────────────────────────── */}
-        <motion.button
-          className="md:hidden flex items-center justify-center cursor-pointer"
-          whileTap={{ scale: 0.9 }}
-          onClick={() => setIsMobileOpen(!isMobileOpen)}
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: 10,
-            background: 'rgba(255,255,255,0.05)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            color: '#fff',
-          }}
-        >
-          {isMobileOpen ? <X size={20} /> : <Menu size={20} />}
-        </motion.button>
+          {/* ── Mobile hamburger ────────────────────────────────── */}
+          <motion.button
+            className="md:hidden flex items-center justify-center cursor-pointer"
+            whileTap={{ scale: 0.9 }}
+            onClick={() => setIsMobileOpen(!isMobileOpen)}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 10,
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              color: '#fff',
+            }}
+          >
+            {isMobileOpen ? <X size={20} /> : <Menu size={20} />}
+          </motion.button>
         </div>
       </div>
 
