@@ -12,65 +12,85 @@ export default function DashboardNav() {
 
   const initials = session?.user?.name
     ? session.user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
-    : 'AI'
+    : 'DU'
+
+  const name = session?.user?.name || 'Demo User'
+  const email = session?.user?.email || 'demo@contentiq.ai'
 
   return (
     <header
-      className="flex items-center justify-between px-8 h-16 flex-shrink-0"
+      className="flex items-center justify-between px-6 h-[72px] flex-shrink-0"
       style={{
-        background: 'var(--nav-bg)',
-        backdropFilter: 'blur(20px)',
+        background: 'var(--bg-main)', // Use the main background instead of transparent
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)', // For Safari support
+        backgroundColor: 'rgba(var(--bg-main-rgb), 0.8)', // Fallback if using RGB var, or just rely on CSS
         borderBottom: '1px solid var(--border-color)',
         position: 'sticky',
         top: 0,
         zIndex: 50,
-        transition: 'background 0.3s ease, border-color 0.3s ease',
       }}
     >
-      {/* Left: breadcrumb hint */}
-      <div className="flex items-center gap-2">
-        <div className="w-2 h-2 rounded-full" style={{ background: '#8B5CF6', boxShadow: '0 0 8px #8B5CF6' }} />
-        <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>ContentIQ Dashboard</span>
+      {/* ── Left: Path ─────────────────────────────── */}
+      <div className="flex items-center gap-6">
+        {/* Dashboard Title / Breadcrumb */}
+        <div className="hidden sm:flex items-center gap-3">
+          <img src="/logo.png" alt="ContentIQ Logo" className="h-8 w-8 object-contain" />
+          <span className="text-xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+            Dashboard
+          </span>
+        </div>
       </div>
 
-      {/* Right: theme toggle + notification + user */}
+      {/* ── Right: Theme + Notifications + Profile ─────────────────────────────── */}
       <div className="flex items-center gap-3">
-
-        {/* ── Theme Toggle ─────────────────────────────── */}
         <ThemeToggle />
 
-        {/* Notification bell */}
-        <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-          className="relative p-2 rounded-xl transition-colors"
-          style={{ background: 'var(--btn-bg)', border: '1px solid var(--border-color)' }}>
-          <Bell size={18} style={{ color: 'var(--text-secondary)' }} />
-          <div className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full"
-            style={{ background: '#38BDF8', boxShadow: '0 0 6px #38BDF8' }} />
+        {/* Notification Bell */}
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="relative p-[10px] rounded-xl transition-all duration-300 flex items-center justify-center group"
+          style={{
+            background: 'var(--btn-bg)',
+            border: '1px solid var(--border-color)',
+          }}
+        >
+          <Bell size={18} className="transition-colors" style={{ color: 'var(--text-secondary)' }} />
+          <div className="absolute top-[8px] right-[8px] w-[6px] h-[6px] bg-[#38BDF8] rounded-full shadow-[0_0_8px_rgba(56,189,248,0.8)]" />
         </motion.button>
 
-        {/* User dropdown */}
+        {/* User Card Button (Profile) */}
         <div className="relative">
           <motion.button
-            whileHover={{ scale: 1.02 }}
+            whileHover={{ scale: 1.01 }}
             onClick={() => setDropdownOpen(o => !o)}
-            className="flex items-center gap-3 px-3 py-2 rounded-xl transition-colors"
-            style={{ background: 'var(--btn-bg)', border: '1px solid var(--border-color)' }}
+            className="flex items-center gap-3 px-[10px] py-[8px] rounded-xl transition-colors ml-2"
+            style={{
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border-color)'
+            }}
           >
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white"
-              style={{ background: 'linear-gradient(135deg, #38BDF8, #8B5CF6)' }}>
+            {/* Avatar block */}
+            <div className="w-10 h-10 flex items-center justify-center rounded-lg text-white font-bold text-sm"
+              style={{ background: 'linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%)' }}>
               {initials}
             </div>
-            <div className="hidden sm:block text-left">
-              <div className="text-sm font-medium leading-tight" style={{ color: 'var(--text-primary)' }}>
-                {session?.user?.name || 'User'}
-              </div>
-              <div className="text-xs leading-tight" style={{ color: 'var(--text-muted)' }}>
-                {session?.user?.email || ''}
-              </div>
+
+            {/* Name & Email */}
+            <div className="flex flex-col items-start pr-1">
+              <span className="text-sm font-semibold leading-tight mb-[2px]" style={{ color: 'var(--text-primary)' }}>
+                {name}
+              </span>
+              <span className="text-[11px] font-medium leading-tight" style={{ color: 'var(--text-muted)' }}>
+                {email}
+              </span>
             </div>
+
             <ChevronDown size={14} style={{ color: 'var(--text-muted)' }} />
           </motion.button>
 
+          {/* Dropdown Menu */}
           <AnimatePresence>
             {dropdownOpen && (
               <>
@@ -80,7 +100,7 @@ export default function DashboardNav() {
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: -8 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute right-0 top-full mt-2 w-52 rounded-2xl overflow-hidden z-50"
+                  className="absolute right-0 top-full mt-2 w-56 rounded-2xl overflow-hidden z-50"
                   style={{
                     background: 'var(--dropdown-bg)',
                     border: '1px solid var(--border-color)',
@@ -89,8 +109,8 @@ export default function DashboardNav() {
                   }}
                 >
                   <div className="px-4 py-3" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                    <div className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{session?.user?.name}</div>
-                    <div className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{session?.user?.email}</div>
+                    <div className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{name}</div>
+                    <div className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{email}</div>
                   </div>
                   {[
                     { icon: User, label: 'Profile' },
@@ -121,3 +141,4 @@ export default function DashboardNav() {
     </header>
   )
 }
+

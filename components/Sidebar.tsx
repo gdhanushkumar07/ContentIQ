@@ -14,7 +14,6 @@ import {
   MusicalNoteIcon,
   LanguageIcon,
 } from '@heroicons/react/24/outline'
-import { Sparkles } from 'lucide-react'
 
 const NAV_ITEMS = [
   { label: 'Dashboard', href: '/dashboard', icon: HomeIcon },
@@ -72,30 +71,18 @@ export default function Sidebar() {
                   !isActive && 'hover:translate-x-[5px]',
                 ].filter(Boolean).join(' ')}
                 style={{
-                  color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)',
+                  color: isActive ? 'var(--primary)' : 'var(--text-secondary)',
                   background: isActive
-                    ? 'linear-gradient(90deg, rgba(139,92,246,0.15) 0%, rgba(56,189,248,0.05) 100%)'
+                    ? 'rgba(59, 130, 246, 0.1)'
                     : 'transparent',
-                  borderLeft: isActive ? '2px solid #8B5CF6' : '2px solid transparent',
-                  boxShadow: isActive
-                    ? '0 0 16px rgba(139,92,246,0.18), inset 0 0 16px rgba(139,92,246,0.04)'
-                    : undefined,
+                  borderLeft: isActive ? '3px solid var(--primary)' : '3px solid transparent',
                 }}
               >
-                {/* Hover gradient overlay (inactive only) */}
+                {/* Hover ring */}
                 {!isActive && (
                   <div
                     className="absolute inset-0 rounded-xl opacity-0 group-hover/item:opacity-100 transition-opacity duration-300 ease-out pointer-events-none"
-                    style={{
-                      background: 'linear-gradient(90deg, rgba(139,92,246,0.08) 0%, rgba(56,189,248,0.03) 100%)',
-                    }}
-                  />
-                )}
-                {/* Hover glow ring */}
-                {!isActive && (
-                  <div
-                    className="absolute inset-0 rounded-xl opacity-0 group-hover/item:opacity-100 transition-opacity duration-300 ease-out pointer-events-none dark:block"
-                    style={{ boxShadow: '0 0 16px rgba(139,92,246,0.20)' }}
+                    style={{ background: 'var(--bg-card-hover)' }}
                   />
                 )}
 
@@ -104,8 +91,7 @@ export default function Sidebar() {
                   className={['flex-shrink-0 transition-all duration-300 ease-out', !isActive && 'group-hover/item:scale-110'].join(' ')}
                   style={{
                     width: 20, height: 20,
-                    color: isActive ? '#8B5CF6' : 'currentColor',
-                    filter: isActive ? 'drop-shadow(0 0 5px rgba(139,92,246,0.65))' : undefined,
+                    color: isActive ? 'var(--primary)' : 'currentColor',
                   }}
                 />
 
@@ -115,10 +101,9 @@ export default function Sidebar() {
                 {/* Active left-glow pip */}
                 {isActive && (
                   <span
-                    className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full"
+                    className="absolute left-0 top-1/2 -translate-y-1/2 w-[4px] h-6 rounded-r-full"
                     style={{
-                      background: 'linear-gradient(180deg, #38BDF8 0%, #8B5CF6 100%)',
-                      boxShadow: '0 0 8px rgba(139,92,246,0.8)',
+                      background: 'var(--primary)',
                     }}
                   />
                 )}
