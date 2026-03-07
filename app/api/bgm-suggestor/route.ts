@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { TranscribeClient, StartTranscriptionJobCommand, GetTranscriptionJobCommand } from "@aws-sdk/client-transcribe";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { s3 } from "@/lib/aws";
+import { fetchWithElevenLabsFallback } from "@/lib/elevenlabs";
 
 // Initialize AWS Clients
 const transcribe = new TranscribeClient({
@@ -100,11 +101,6 @@ export async function POST(req: Request) {
         // Prepare a safe snippet of the text to influence the BGM
         const textSnippet = sourceText.slice(0, 100).replace(/[^a-zA-Z0-9., ]/g, '');
 
-        const apiKey = process.env.ELEVENLABS_API_KEY;
-        if (!apiKey) {
-            throw new Error("ElevenLabs API key is missing.");
-        }
-
         // 2. Generate BGM options in parallel using ElevenLabs Sound Effects API
         // To save time, we generate 3 variations based on the content
         const generatePrompts = BGM_GENRES.map(g => {
@@ -113,12 +109,11 @@ export async function POST(req: Request) {
             const prompt = `Pure instrumental background music, NO VOICES, NO SINGING, NO SPOKEN WORDS. ${g.genre} genre, ${activeMood} mood. Thematic inspiration: "${textSnippet}". Strict requirement: instrumental only.`;
 
             return async () => {
-                const elevenLabsResponse = await fetch(`https://api.elevenlabs.io/v1/sound-generation`, {
+                const elevenLabsResponse = await fetchWithElevenLabsFallback(`https://api.elevenlabs.io/v1/sound-generation`, {
                     method: "POST",
                     headers: {
                         "Accept": "audio/mpeg",
-                        "Content-Type": "application/json",
-                        "xi-api-key": apiKey
+                        "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
                         text: prompt,

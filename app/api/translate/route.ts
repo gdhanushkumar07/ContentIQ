@@ -3,6 +3,7 @@ import { TranscribeClient, StartTranscriptionJobCommand, GetTranscriptionJobComm
 import { TranslateClient, TranslateTextCommand } from "@aws-sdk/client-translate";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { s3 } from "@/lib/aws";
+import { fetchWithElevenLabsFallback } from "@/lib/elevenlabs";
 
 // Initialize AWS Clients
 const transcribe = new TranscribeClient({
@@ -184,18 +185,11 @@ export async function POST(req: Request) {
     }
 
     const voiceId = bestVoiceId;
-    const apiKey = process.env.ELEVENLABS_API_KEY;
-
-    if (!apiKey) {
-      throw new Error("ElevenLabs API key is missing. Please add ELEVENLABS_API_KEY to your .env.local");
-    }
-
-    const elevenLabsResponse = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+    const elevenLabsResponse = await fetchWithElevenLabsFallback(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
       method: "POST",
       headers: {
         "Accept": "audio/mpeg",
-        "Content-Type": "application/json",
-        "xi-api-key": apiKey
+        "Content-Type": "application/json"
       },
       body: JSON.stringify({
         text: translatedText,

@@ -6,7 +6,6 @@ const nextConfig = {
       bodySizeLimit: "100mb",
     },
   },
-  serverExternalPackages: ["@aws-sdk/*"],
 };
 
 module.exports = nextConfig;
