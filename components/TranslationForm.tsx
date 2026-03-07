@@ -65,13 +65,13 @@ export default function TranslationForm() {
                     <div className="space-y-6 flex flex-col justify-between">
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-medium mb-2 text-zinc-300">From (Source)</label>
+                                <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-zinc-300">From (Source)</label>
                                 <div className="relative">
                                     <Languages className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-400" />
                                     <select
                                         value={sourceLang}
                                         onChange={(e) => translatorStore.setState({ sourceLang: e.target.value })}
-                                        className="w-full bg-zinc-900/50 border border-zinc-700/50 rounded-xl pl-10 pr-4 py-3 text-sm focus:ring-2 focus:ring-blue-500/50 text-zinc-200 outline-none transition-all appearance-none cursor-pointer"
+                                        className="w-full bg-white dark:bg-zinc-900/50 border border-gray-200 dark:border-zinc-700/50 rounded-xl pl-10 pr-4 py-3 text-sm focus:ring-2 focus:ring-blue-500/50 text-gray-900 dark:text-zinc-200 outline-none transition-all appearance-none cursor-pointer"
                                     >
                                         <option value="auto">Auto Detect</option>
                                         {LANGUAGES.map(lang => (
@@ -82,13 +82,13 @@ export default function TranslationForm() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium mb-2 text-zinc-300">To (Target)</label>
+                                <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-zinc-300">To (Target)</label>
                                 <div className="relative">
                                     <Languages className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-purple-400" />
                                     <select
                                         value={targetLang}
                                         onChange={(e) => translatorStore.setState({ targetLang: e.target.value })}
-                                        className="w-full bg-zinc-900/50 border border-zinc-700/50 rounded-xl pl-10 pr-4 py-3 text-sm focus:ring-2 focus:ring-purple-500/50 text-zinc-200 outline-none transition-all appearance-none cursor-pointer"
+                                        className="w-full bg-white dark:bg-zinc-900/50 border border-gray-200 dark:border-zinc-700/50 rounded-xl pl-10 pr-4 py-3 text-sm focus:ring-2 focus:ring-purple-500/50 text-gray-900 dark:text-zinc-200 outline-none transition-all appearance-none cursor-pointer"
                                     >
                                         {LANGUAGES.map(lang => (
                                             <option key={lang.code} value={lang.code}>{lang.name}</option>
@@ -100,22 +100,22 @@ export default function TranslationForm() {
 
                         {/* ElevenLabs Voice Customization options */}
                         <div className="bg-purple-500/5 border border-purple-500/20 rounded-xl p-4 space-y-4">
-                            <h4 className="text-sm font-semibold text-purple-300 flex items-center gap-2">
+                            <h4 className="text-sm font-semibold text-purple-600 dark:text-purple-300 flex items-center gap-2">
                                 <Languages className="w-4 h-4" />
                                 Voice Style (ElevenLabs)
                             </h4>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
-                                    <label className="block text-xs font-medium mb-1 text-zinc-400">Gender</label>
-                                    <select value={voiceGender} onChange={(e) => translatorStore.setState({ voiceGender: e.target.value })} className="w-full bg-zinc-900/50 border border-zinc-700/50 rounded-lg px-3 py-2 text-sm text-zinc-200 outline-none hover:border-zinc-500/50 transition-colors">
+                                    <label className="block text-xs font-medium mb-1 text-gray-900 dark:text-zinc-400">Gender</label>
+                                    <select value={voiceGender} onChange={(e) => translatorStore.setState({ voiceGender: e.target.value })} className="w-full bg-white dark:bg-zinc-900/50 border border-gray-200 dark:border-zinc-700/50 rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-zinc-200 outline-none hover:border-zinc-500/50 transition-colors">
                                         <option value="any">Any</option>
                                         <option value="female">Female</option>
                                         <option value="male">Male</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-medium mb-1 text-zinc-400">Age</label>
-                                    <select value={voiceAge} onChange={(e) => translatorStore.setState({ voiceAge: e.target.value })} className="w-full bg-zinc-900/50 border border-zinc-700/50 rounded-lg px-3 py-2 text-sm text-zinc-200 outline-none hover:border-zinc-500/50 transition-colors">
+                                    <label className="block text-xs font-medium mb-1 text-gray-900 dark:text-zinc-400">Age</label>
+                                    <select value={voiceAge} onChange={(e) => translatorStore.setState({ voiceAge: e.target.value })} className="w-full bg-white dark:bg-zinc-900/50 border border-gray-200 dark:border-zinc-700/50 rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-zinc-200 outline-none hover:border-zinc-500/50 transition-colors">
                                         <option value="any">Any</option>
                                         <option value="young">Young</option>
                                         <option value="middle aged">Middle Aged</option>
@@ -123,8 +123,8 @@ export default function TranslationForm() {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-medium mb-1 text-zinc-400">Tone / Category</label>
-                                    <select value={voiceTone} onChange={(e) => translatorStore.setState({ voiceTone: e.target.value })} className="w-full bg-zinc-900/50 border border-zinc-700/50 rounded-lg px-3 py-2 text-sm text-zinc-200 outline-none hover:border-zinc-500/50 transition-colors">
+                                    <label className="block text-xs font-medium mb-1 text-gray-900 dark:text-zinc-400">Tone / Category</label>
+                                    <select value={voiceTone} onChange={(e) => translatorStore.setState({ voiceTone: e.target.value })} className="w-full bg-white dark:bg-zinc-900/50 border border-gray-200 dark:border-zinc-700/50 rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-zinc-200 outline-none hover:border-zinc-500/50 transition-colors">
                                         <option value="any">Any</option>
                                         <option value="narration">Narration</option>
                                         <option value="news">News</option>
@@ -137,17 +137,17 @@ export default function TranslationForm() {
 
                         <div className="flex-1 space-y-3">
                             <div className="flex items-center justify-between">
-                                <label className="block text-sm font-medium text-zinc-300">Input Content</label>
+                                <label className="block text-sm font-medium text-gray-900 dark:text-zinc-300">Input Content</label>
                                 <div className="flex bg-zinc-900/80 rounded-lg p-1 border border-zinc-800">
                                     <button
                                         onClick={() => translatorStore.setState({ inputMode: "file" })}
-                                        className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${inputMode === "file" ? "bg-purple-500/20 text-purple-300" : "text-zinc-500 hover:text-zinc-300"}`}
+                                        className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${inputMode === "file" ? "bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300" : "text-gray-500 dark:text-zinc-500 hover:text-gray-900 dark:hover:text-zinc-300"}`}
                                     >
                                         Upload File
                                     </button>
                                     <button
                                         onClick={() => translatorStore.setState({ inputMode: "text" })}
-                                        className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${inputMode === "text" ? "bg-purple-500/20 text-purple-300" : "text-zinc-500 hover:text-zinc-300"}`}
+                                        className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${inputMode === "text" ? "bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300" : "text-gray-500 dark:text-zinc-500 hover:text-gray-900 dark:hover:text-zinc-300"}`}
                                     >
                                         Paste Text
                                     </button>
@@ -171,8 +171,8 @@ export default function TranslationForm() {
                                         <div className="flex flex-col items-center gap-3">
                                             {file.type.startsWith('audio') ? <FileAudio className="w-10 h-10 text-purple-400" /> : <FileText className="w-10 h-10 text-blue-400" />}
                                             <div className="space-y-1">
-                                                <div className="text-sm font-medium text-zinc-200 truncate max-w-[200px]">{file.name}</div>
-                                                <div className="text-xs text-zinc-400">{(file.size / 1024 / 1024).toFixed(2)} MB</div>
+                                                <div className="text-sm font-medium text-gray-900 dark:text-zinc-200 truncate max-w-[200px]">{file.name}</div>
+                                                <div className="text-xs text-gray-500 dark:text-zinc-400">{(file.size / 1024 / 1024).toFixed(2)} MB</div>
                                             </div>
                                         </div>
                                     ) : (
@@ -181,15 +181,15 @@ export default function TranslationForm() {
                                                 <UploadCloud className="w-6 h-6 text-zinc-400" />
                                             </div>
                                             <div>
-                                                <p className="text-sm font-medium text-zinc-300">Click or drag file to upload</p>
-                                                <p className="text-xs text-zinc-500 mt-1">Supports .mp3 and .wav</p>
+                                                <p className="text-sm font-medium text-gray-900 dark:text-zinc-300">Click or drag file to upload</p>
+                                                <p className="text-xs text-gray-500 dark:text-zinc-500 mt-1">Supports .mp3 and .wav</p>
                                             </div>
                                         </div>
                                     )}
                                 </div>
                             ) : (
                                 <textarea
-                                    className="w-full h-[200px] bg-zinc-900/50 border border-zinc-700/50 focus:border-purple-500/50 rounded-xl p-4 text-sm text-zinc-200 outline-none resize-none transition-colors placeholder:text-zinc-600"
+                                    className="w-full h-[200px] bg-white dark:bg-zinc-900/50 border border-gray-200 dark:border-zinc-700/50 focus:border-purple-500/50 rounded-xl p-4 text-sm text-gray-900 dark:text-zinc-200 outline-none resize-none transition-colors placeholder:text-gray-400 dark:placeholder:text-zinc-600"
                                     placeholder="Type or paste the text you want to translate and convert to speech..."
                                     value={inputText}
                                     onChange={(e) => translatorStore.setState({ inputText: e.target.value })}
@@ -223,15 +223,15 @@ export default function TranslationForm() {
                     </div>
 
                     {/* Results Area */}
-                    <div className="bg-zinc-900/40 rounded-xl border border-zinc-800 p-6 flex flex-col h-full min-h-[350px]">
-                        <h3 className="font-medium text-zinc-200 mb-4 flex items-center gap-2">
+                    <div className="bg-white text-gray-900 dark:text-white dark:bg-zinc-900/40 rounded-xl border border-gray-200 dark:border-zinc-800 p-6 flex flex-col h-full min-h-[350px]">
+                        <h3 className="font-medium text-gray-900 dark:text-zinc-200 mb-4 flex items-center gap-2">
                             <FileText className="w-4 h-4 text-purple-400" />
                             Translation Result
                         </h3>
 
                         <AnimatePresence mode="wait">
                             {isUploading ? (
-                                <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 flex flex-col items-center justify-center text-center gap-4 text-zinc-400">
+                                <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 flex flex-col items-center justify-center text-center gap-4 text-gray-600 dark:text-zinc-400">
                                     <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
                                     <p className="text-sm px-4">
                                         {file?.type.startsWith('audio')
@@ -241,16 +241,16 @@ export default function TranslationForm() {
                                 </motion.div>
                             ) : result ? (
                                 <motion.div key="result" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 flex flex-col gap-4">
-                                    <div className="flex-1 overflow-y-auto max-h-[300px] space-y-4 pr-1 text-zinc-300">
+                                    <div className="flex-1 overflow-y-auto max-h-[300px] space-y-4 pr-1 text-gray-800 dark:text-zinc-300">
                                         <div className="flex flex-col gap-1">
-                                            <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Source Text</span>
-                                            <div className="text-sm bg-zinc-900/60 p-3 rounded-lg border border-zinc-800/50">
+                                            <span className="text-xs font-semibold text-gray-500 dark:text-zinc-500 uppercase tracking-wider">Source Text</span>
+                                            <div className="text-sm bg-gray-50 dark:bg-zinc-900/60 p-3 rounded-lg border border-gray-200 dark:border-zinc-800/50 text-gray-900 dark:text-zinc-200">
                                                 {result.originalText}
                                             </div>
                                         </div>
                                         <div className="flex flex-col gap-1">
-                                            <span className="text-xs font-semibold text-purple-400/80 uppercase tracking-wider">Translated ({LANGUAGES.find(l => l.code === targetLang)?.name})</span>
-                                            <div className="text-sm bg-purple-500/5 p-3 rounded-lg border border-purple-500/20 text-zinc-200">
+                                            <span className="text-xs font-semibold text-purple-600 dark:text-purple-400/80 uppercase tracking-wider">Translated ({LANGUAGES.find(l => l.code === targetLang)?.name})</span>
+                                            <div className="text-sm bg-purple-50 dark:bg-purple-500/5 p-3 rounded-lg border border-purple-200 dark:border-purple-500/20 text-gray-900 dark:text-zinc-200">
                                                 {result.translatedText}
                                             </div>
                                         </div>
@@ -258,7 +258,7 @@ export default function TranslationForm() {
 
                                     {result.type === "audio" && result.audioBase64 && (
                                         <div className="mt-auto pt-4 border-t border-zinc-800">
-                                            <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2 block">Audio Output</label>
+                                            <label className="text-xs font-semibold text-gray-500 dark:text-zinc-500 uppercase tracking-wider mb-2 block">Audio Output</label>
                                             <audio
                                                 controls
                                                 className="w-full h-11 rounded-lg"
@@ -268,13 +268,13 @@ export default function TranslationForm() {
                                     )}
 
                                     {result.type === "text" && (
-                                        <button onClick={downloadText} className="mt-auto flex items-center justify-center gap-2 w-full py-2.5 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm font-medium transition-colors text-zinc-200">
+                                        <button onClick={downloadText} className="mt-auto flex items-center justify-center gap-2 w-full py-2.5 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 rounded-lg text-sm font-medium transition-colors text-gray-900 dark:text-zinc-200">
                                             <Download className="w-4 h-4" /> Download Translated Text
                                         </button>
                                     )}
                                 </motion.div>
                             ) : (
-                                <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 flex flex-col items-center justify-center text-zinc-500 space-y-3">
+                                <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 flex flex-col items-center justify-center text-gray-500 dark:text-zinc-500 space-y-3">
                                     <Languages className="w-10 h-10 opacity-20" />
                                     <div className="text-sm">Upload a file to see results</div>
                                 </motion.div>

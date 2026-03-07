@@ -90,7 +90,7 @@ export default function DistributionPage() {
                     value={title}
                     onChange={(e) => distributionStore.setState({ title: e.target.value })}
                     placeholder="e.g. Building an AI App in 10 Minutes"
-                    className="w-full px-4 py-2.5 rounded-xl border bg-black/50 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 transition-all"
+                    className="w-full px-4 py-2.5 rounded-xl border bg-white dark:bg-black/50 text-black dark:text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 transition-all"
                     style={{ borderColor: "var(--border-subtle)" }}
                   />
                 </div>
@@ -104,7 +104,7 @@ export default function DistributionPage() {
                     value={category}
                     onChange={(e) => distributionStore.setState({ category: e.target.value })}
                     placeholder="e.g. Technology, Education, Vlog"
-                    className="w-full px-4 py-2.5 rounded-xl border bg-black/50 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 transition-all"
+                    className="w-full px-4 py-2.5 rounded-xl border bg-white dark:bg-black/50 text-black dark:text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 transition-all"
                     style={{ borderColor: "var(--border-subtle)" }}
                   />
                 </div>
@@ -118,7 +118,7 @@ export default function DistributionPage() {
                     onChange={(e) => distributionStore.setState({ description: e.target.value })}
                     placeholder="Briefly describe what your video is about..."
                     rows={4}
-                    className="w-full px-4 py-2.5 rounded-xl border bg-black/50 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 transition-all resize-none"
+                    className="w-full px-4 py-2.5 rounded-xl border bg-white dark:bg-black/50 text-black dark:text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 transition-all resize-none"
                     style={{ borderColor: "var(--border-subtle)" }}
                   />
                 </div>
@@ -133,13 +133,13 @@ export default function DistributionPage() {
                     onChange={(e) => distributionStore.setState({ sourceLinks: e.target.value })}
                     placeholder="Paste URLs, articles, or references here..."
                     rows={2}
-                    className="w-full px-4 py-2.5 rounded-xl border bg-black/50 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 transition-all resize-none mb-3"
+                    className="w-full px-4 py-2.5 rounded-xl border bg-white dark:bg-black/50 text-black dark:text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 transition-all resize-none mb-3"
                     style={{ borderColor: "var(--border-subtle)" }}
                   />
 
                   {sourceLinks.trim().length > 0 && (
-                    <div className="p-3 rounded-xl bg-black/30 border border-white/5 space-y-2">
-                      <p className="text-xs text-zinc-400">Include these links in:</p>
+                    <div className="p-3 rounded-xl bg-gray-50 dark:bg-black/30 border border-gray-200 dark:border-white/5 space-y-2">
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400">Include these links in:</p>
                       <div className="flex flex-wrap gap-2">
                         {PLATFORMS.map((platform) => {
                           const isSelected = selectedPlatformsForSources.includes(platform.id);
@@ -240,7 +240,7 @@ export default function DistributionPage() {
                       </div>
 
                       <div className="space-y-4">
-                        <div className="p-4 rounded-xl bg-black/30 border border-white/5 whitespace-pre-wrap text-zinc-300 text-sm leading-relaxed">
+                        <div className="p-4 rounded-xl bg-gray-50 dark:bg-black/30 border border-gray-200 dark:border-white/5 whitespace-pre-wrap text-black dark:text-zinc-300 text-sm leading-relaxed">
                           {platformData.content}
                         </div>
 
@@ -346,8 +346,8 @@ export default function DistributionPage() {
               </button>
             </div>
 
-            <div className="p-4 border-t border-white/10 m-4 rounded-xl border flex items-center gap-3 bg-black/40">
-              <div className="flex-1 truncate text-sm text-zinc-300 px-2 font-mono">
+            <div className="p-4 border-t border-gray-200 dark:border-white/10 m-4 rounded-xl border flex items-center gap-3 bg-gray-50 dark:bg-black/40">
+              <div className="flex-1 truncate text-sm text-black dark:text-zinc-300 px-2 font-mono">
                 {shareContent.length > 50 ? shareContent.substring(0, 50) + "..." : shareContent}
               </div>
               <button onClick={() => {

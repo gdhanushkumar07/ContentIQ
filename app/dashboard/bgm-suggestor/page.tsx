@@ -127,12 +127,12 @@ export default function BGMSuggestorPage() {
                 onChange={handleTextChange}
                 disabled={!!file}
                 placeholder={file ? 'Remove the uploaded file to type text instead.' : 'Describe a scene, e.g., "She rejected me...'}
-                className="w-full h-24 bg-black/20 border border-white/10 rounded-xl p-4 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-pink-500/50 resize-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ background: textInput ? 'rgba(236,72,153,0.05)' : 'rgba(0,0,0,0.2)' }}
+                className="w-full h-24 bg-white dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl p-4 text-sm text-black dark:text-white placeholder-zinc-500 focus:outline-none focus:border-pink-500/50 resize-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ background: textInput ? 'rgba(236,72,153,0.05)' : '' }}
               />
             </div>
 
-            <div className="flex items-center gap-4 text-xs font-semibold text-zinc-500 uppercase tracking-widest">
+            <div className="flex items-center gap-4 text-xs font-semibold text-gray-500 dark:text-zinc-500 uppercase tracking-widest">
               <span className="flex-1 h-px bg-white/5"></span>
               OR UPLOAD MEDIA
               <span className="flex-1 h-px bg-white/5"></span>
@@ -160,13 +160,13 @@ export default function BGMSuggestorPage() {
                     </button>
                     <MusicalNoteIcon className="w-6 h-6 text-pink-500 mb-1" />
                     <p className="font-medium text-pink-400 text-sm truncate max-w-[80%]">{file.name}</p>
-                    <p className="text-xs text-zinc-400">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                    <p className="text-xs text-gray-500 dark:text-zinc-400">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                   </div>
                 ) : (
                   <>
-                    <CloudArrowUpIcon className="w-6 h-6 text-zinc-400 mb-1" />
+                    <CloudArrowUpIcon className="w-6 h-6 text-gray-500 dark:text-zinc-400 mb-1" />
                     <p className="font-medium text-sm">{textInput ? 'Clear text to upload file' : 'Click or drag file here'}</p>
-                    <p className="text-xs text-zinc-400">Audio or Video</p>
+                    <p className="text-xs text-gray-500 dark:text-zinc-400">Audio or Video</p>
                   </>
                 )}
               </div>
@@ -175,7 +175,7 @@ export default function BGMSuggestorPage() {
 
           <div className="w-full md:w-64 flex flex-col gap-4">
             <div>
-              <label className="block text-sm text-zinc-400 mb-1">Target Duration ({duration}s)</label>
+              <label className="block text-sm text-gray-900 dark:text-zinc-400 mb-1">Target Duration ({duration}s)</label>
               <input
                 type="range"
                 min="5" max="22"
@@ -183,14 +183,14 @@ export default function BGMSuggestorPage() {
                 onChange={(e) => bgmSuggestorStore.setState({ duration: parseInt(e.target.value) })}
                 className="w-full accent-pink-500"
               />
-              <div className="flex justify-between text-xs text-zinc-500 px-1 mt-1">
+              <div className="flex justify-between text-xs text-gray-500 dark:text-zinc-500 px-1 mt-1">
                 <span>5s</span>
                 <span>Max 22s</span>
               </div>
             </div>
 
             <div className="relative">
-              <label className="block text-sm font-medium text-zinc-300 mb-2 flex justify-between items-center">
+              <label className="block text-sm font-medium text-gray-900 dark:text-zinc-300 mb-2 flex justify-between items-center">
                 <span>Optional Tone</span>
                 {tone !== 'Auto' && (
                   <button onClick={() => bgmSuggestorStore.setState({ tone: 'Auto' })} className="text-[10px] text-pink-400 hover:text-pink-300 px-1.5 py-0.5 rounded-md bg-pink-500/10 transition-colors">Clear</button>
@@ -200,12 +200,12 @@ export default function BGMSuggestorPage() {
               <div className="relative">
                 <div
                   onClick={() => setIsToneOpen(!isToneOpen)}
-                  className="w-full flex justify-between items-center bg-black/20 border border-white/10 hover:border-white/20 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-pink-500/50 transition-all cursor-pointer shadow-inner"
+                  className="w-full flex justify-between items-center bg-white dark:bg-black/20 border border-gray-200 dark:border-white/10 dark:hover:border-white/20 rounded-xl px-4 py-3 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-pink-500/50 transition-all cursor-pointer shadow-inner"
                   style={{
-                    background: tone !== 'Auto' ? 'linear-gradient(to right, rgba(236,72,153,0.05), rgba(0,0,0,0.2))' : 'rgba(0,0,0,0.2)'
+                    background: tone !== 'Auto' ? 'linear-gradient(to right, rgba(236,72,153,0.05), transparent)' : ''
                   }}
                 >
-                  <span className={tone === 'Auto' ? 'text-zinc-400' : 'text-pink-100'}>{tone === 'Auto' ? 'Let AI Decide (Auto)' : tone}</span>
+                  <span className={tone === 'Auto' ? 'text-zinc-500 dark:text-zinc-400' : 'text-pink-600 dark:text-pink-100'}>{tone === 'Auto' ? 'Let AI Decide (Auto)' : tone}</span>
                   <div className={`text-zinc-400 transition-transform duration-200 ${isToneOpen ? 'rotate-180' : ''}`}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
                   </div>
@@ -259,9 +259,9 @@ export default function BGMSuggestorPage() {
       {extractedText && (
         <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="glass-card p-5">
           <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
-            <DocumentTextIcon className="w-4 h-4 text-zinc-400" /> Context Used for BGM Generation
+            <DocumentTextIcon className="w-4 h-4 text-gray-500 dark:text-zinc-400" /> Context Used for BGM Generation
           </h3>
-          <p className="text-sm text-zinc-300 italic line-clamp-2">"{extractedText}"</p>
+          <p className="text-sm text-gray-900 dark:text-zinc-300 italic line-clamp-2">"{extractedText}"</p>
         </motion.div>
       )}
 
@@ -278,7 +278,7 @@ export default function BGMSuggestorPage() {
               <p>Curating perfect tracks...</p>
             </div>
           ) : filtered.length === 0 ? (
-            <div className="py-20 text-center text-zinc-500">No tracks found for this filter.</div>
+            <div className="py-20 text-center text-gray-600 dark:text-zinc-500">No tracks found for this filter.</div>
           ) : filtered.map((track, i) => (
             <div key={`${track.title}-${i}`} className="flex items-center gap-4 px-6 py-4 transition-colors group"
               style={{ borderBottom: i < filtered.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}
@@ -334,7 +334,7 @@ export default function BGMSuggestorPage() {
                     className="p-2 rounded-lg" style={{ background: 'rgba(255,255,255,0.07)' }}
                     title="Download Audio"
                   >
-                    <Download size={14} className="text-zinc-300 hover:text-white transition-colors" />
+                    <Download size={14} className="text-gray-500 hover:text-gray-900 dark:text-zinc-300 dark:hover:text-white transition-colors" />
                   </motion.button>
                 )}
                 <motion.button whileHover={{ scale: 1.1 }} onClick={() => setLiked(s => { const n = new Set(s); n.has(i) ? n.delete(i) : n.add(i); return n })}
@@ -350,7 +350,7 @@ export default function BGMSuggestorPage() {
 
           {/* Chrome Download Warning */}
           <div className="px-6 py-4 text-center border-t border-white/[0.06]">
-            <p className="text-xs text-zinc-500 italic">
+            <p className="text-xs text-gray-500 dark:text-zinc-500 italic">
               * Note: Direct audio downloading is currently not fully supported in Google Chrome due to browser security restrictions. For the best downloading experience, please use Firefox or Safari.
             </p>
           </div>

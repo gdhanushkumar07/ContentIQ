@@ -12,6 +12,25 @@
   letter-spacing: 2px;
 }
 
+@layer base {
+  input,
+  textarea,
+  select {
+    @apply bg-white text-gray-900 border border-gray-200;
+  }
+
+  .dark input,
+  .dark textarea,
+  .dark select {
+    @apply bg-gray-800 text-white border-gray-700;
+  }
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #9ca3af;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

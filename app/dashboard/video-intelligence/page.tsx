@@ -238,7 +238,7 @@ export default function VideoIntelligencePage() {
       <div className="space-y-8 w-full">
         {/* Header */}
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-[#F1F5F9] dark:bg-[#38BDF8]/12 border border-slate-200 dark:border-[#38BDF8]/25">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-gray-50 dark:bg-[#38BDF8]/12 border border-slate-200 dark:border-[#38BDF8]/25">
             <VideoAIIcon className="w-5 h-5 text-slate-700 dark:text-[#38BDF8]" />
           </div>
           <div>
@@ -250,7 +250,7 @@ export default function VideoIntelligencePage() {
         </div>
 
         {/* Upload box */}
-        <div className="bg-[#F8FAFC] dark:bg-white/5 dark:backdrop-blur-xl rounded-[32px] p-12 flex flex-col items-center justify-center text-center shadow-sm dark:shadow-none border border-slate-200/60 dark:border-white/10 dark:border-dashed"
+        <div className="bg-white dark:bg-white/5 dark:backdrop-blur-xl rounded-[32px] p-12 flex flex-col items-center justify-center text-center shadow-sm dark:shadow-none border border-slate-200/60 dark:border-white/10 dark:border-dashed"
           style={{ minHeight: 460 }}>
           <VideoAIIcon className="w-10 h-10 text-[#312E81] dark:text-purple-400/60 mb-6" />
           <h3 className="text-[22px] dark:text-lg font-bold dark:font-semibold mb-3 text-slate-900 dark:text-white tracking-tight">Upload your video for private evaluation</h3>
@@ -376,18 +376,18 @@ export default function VideoIntelligencePage() {
               No critical drop-off zones detected 🎉
             </div>
           ) : (
-            <div className="flex flex-col gap-2.5">
-              {lowScenes.map((s, i) => (
-                <div key={i} className="bg-[#fef2f2] dark:bg-[#ef4444]/[0.09] border border-[#fecaca] dark:border-[#ef4444]/20 rounded-xl px-4 py-3.5 text-[14px] text-[#991b1b] dark:text-[#fca5a5]">
-                  <strong className="text-slate-900 dark:text-white">{s.timestamp}</strong> — {s.whyItFailed ?? 'Low engagement zone'}
-                </div>
-              ))}
-            </div>
-          )}
+          <div className="flex flex-col gap-2.5">
+            {lowScenes.map((s, i) => (
+              <div key={i} className="bg-[#fef2f2] dark:bg-[#ef4444]/[0.09] border border-[#fecaca] dark:border-[#ef4444]/20 rounded-xl px-4 py-3.5 text-[14px] text-[#991b1b] dark:text-[#fca5a5]">
+                <strong className="text-slate-900 dark:text-white">{s.timestamp}</strong> — {s.whyItFailed ?? 'Low engagement zone'}
+              </div>
+            ))}
+          </div>
+        )}
 
-          <div className="h-px bg-slate-200 dark:bg-purple-500/10 my-6" />
+        <div className="h-px bg-gray-200 dark:bg-purple-500/10 my-6" />
 
-          <div className="flex items-center gap-2 mb-4">
+        <div className="flex items-center gap-2 mb-4">
             <div className="w-2 h-2 rounded-full bg-[#22c55e] shadow-[0_0_8px_rgba(34,197,94,0.7)]" />
             <span className="font-bold text-[15px] text-slate-900 dark:text-white">Improvement Actions</span>
           </div>
@@ -439,7 +439,7 @@ export default function VideoIntelligencePage() {
                   </div>
                   <div>
                     <div className="text-[14px] font-bold text-slate-800 dark:text-white/90 mb-3 leading-tight pr-4">{s.label}</div>
-                    <div className="h-[5px] rounded-full bg-slate-200 dark:bg-[#2A2440] overflow-hidden">
+                    <div className="h-[5px] rounded-full bg-gray-200 dark:bg-[#2A2440] overflow-hidden">
                       <div className="h-full rounded-full" style={{ width: `${s.val}%`, backgroundColor: s.c }} />
                     </div>
                   </div>
@@ -477,7 +477,7 @@ export default function VideoIntelligencePage() {
                 <span className="font-extrabold text-[16px]" style={{ color: m.c }}>{m.value}%</span>
               </div>
               <div className="text-[12px] font-bold text-slate-700 dark:text-[#e2e8f0] leading-tight">{m.label}</div>
-              <div className="h-1.5 rounded-full bg-slate-100 dark:bg-white/5 overflow-hidden mt-0.5">
+              <div className="h-1.5 rounded-full bg-gray-200 dark:bg-white/5 overflow-hidden mt-0.5">
                 <div className="h-full rounded-full" style={{ width: `${m.value}%`, backgroundColor: m.c }} />
               </div>
             </div>
@@ -515,7 +515,7 @@ export default function VideoIntelligencePage() {
         <div className="bg-white dark:bg-[#120E28]/70 border border-slate-200 dark:border-purple-500/20 rounded-3xl p-6 sm:p-8 shadow-sm dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] dark:backdrop-blur-md relative">
           <div className="relative">
             {/* Glow spine */}
-            <div className="absolute left-6 top-6 bottom-6 w-0.5 bg-slate-200 dark:bg-gradient-to-b dark:from-purple-500/60 dark:to-sky-500/15 dark:shadow-[0_0_8px_rgba(139,92,246,0.4)]" />
+            <div className="absolute left-6 top-6 bottom-6 w-0.5 bg-gray-200 dark:bg-gradient-to-b dark:from-purple-500/60 dark:to-sky-500/15 dark:shadow-[0_0_8px_rgba(139,92,246,0.4)]" />
 
             <div className="flex flex-col gap-6">
               {scenes.map((scene, idx) => {
@@ -551,7 +551,7 @@ export default function VideoIntelligencePage() {
 
                       {/* What Nova actually saw in this scene (real frame analysis) */}
                       {scene.sceneContent && (
-                        <div className="flex items-start gap-2.5 bg-[#F0F9FF] dark:bg-[#38bdf8]/[0.06] border border-[#BAE6FD] dark:border-[#38bdf8]/15 rounded-lg py-2 px-3 mb-2.5">
+                        <div className="flex items-start gap-2.5 bg-white dark:bg-[#38bdf8]/[0.06] border border-gray-200 dark:border-[#38bdf8]/15 rounded-lg py-2 px-3 mb-2.5">
                           <span className="text-[14px] shrink-0">👥</span>
                           <span className="text-[13px] text-slate-700 dark:text-[#7dd3fc] leading-snug font-medium">
                             {scene.sceneContent}
@@ -561,7 +561,7 @@ export default function VideoIntelligencePage() {
 
                       {/* Audio content — what was actually said in this scene */}
                       {scene.audioContent && scene.audioContent !== '[No audio transcript for this scene]' && (
-                        <div className="flex items-start gap-2.5 bg-[#F8FAFC] dark:bg-[#a855f7]/[0.07] border border-slate-200 dark:border-[#a855f7]/20 rounded-lg py-2 px-3 mb-2.5">
+                        <div className="flex items-start gap-2.5 bg-white dark:bg-[#a855f7]/[0.07] border border-gray-200 dark:border-[#a855f7]/20 rounded-lg py-2 px-3 mb-2.5">
                           <span className="text-[14px] shrink-0">🎤</span>
                           <div>
                             <div className="text-[10px] text-slate-500 dark:text-[#a78bfa] font-bold tracking-wider uppercase mb-1">Spoken Audio</div>
@@ -574,7 +574,7 @@ export default function VideoIntelligencePage() {
 
                       {/* Audience review quote */}
                       {scene.audienceReview && (
-                        <div className="text-[13.5px] italic text-slate-700 dark:text-[#c4b5fd] bg-[#F8FAFC] dark:bg-purple-500/[0.07] border border-slate-200 dark:border-purple-500/15 rounded-lg py-2.5 px-3.5 mb-3 leading-relaxed font-medium">
+                        <div className="text-[13.5px] italic text-slate-700 dark:text-[#c4b5fd] bg-white dark:bg-purple-500/[0.07] border border-gray-200 dark:border-purple-500/15 rounded-lg py-2.5 px-3.5 mb-3 leading-relaxed font-medium">
                           "{scene.audienceReview}"
                         </div>
                       )}
