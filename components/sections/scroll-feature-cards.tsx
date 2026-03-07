@@ -7,42 +7,42 @@ import { Brain, Shield, TrendingUp, Globe } from "lucide-react";
 export default function ScrollFeatureCards() {
   const items: BentoItem[] = [
     {
-      title: "Scene Intelligence",
-      meta: "AI Engine",
+      title: "Video Intelligence",
+      meta: "AI ANALYSIS",
       description:
-        "Deep frame-by-frame AI identifies key scenes, faces, and emotional arcs.",
+        "AI analyzes raw footage frame-by-frame to detect scenes, highlights, and key moments instantly.",
       icon: <Brain className="w-4 h-4 text-cyan-400" />,
       status: "Live",
-      tags: ["AI", "Detection", "Highlights"],
+      tags: ["AI", "Scene Detection", "Highlights"],
       colSpan: 2,
       hasPersistentHover: true,
     },
     {
-      title: "Privacy-First Filtering",
-      meta: "Security",
+      title: "Script Generator",
+      meta: "CONTENT AI",
       description:
-        "Enterprise-grade face blur and compliance automation before distribution.",
+        "Automatically generates engaging scripts and captions from video context to speed up content creation.",
       icon: <Shield className="w-4 h-4 text-purple-400" />,
       status: "Secure",
-      tags: ["GDPR", "PII"],
+      tags: ["AI", "Script", "Content"],
     },
     {
-      title: "Trend Prediction",
-      meta: "Viral Windows",
+      title: "Multilingual Dubbing",
+      meta: "VOICE AI",
       description:
-        "Real-time ML forecasting for optimal publish timing and format.",
+        "Generate natural voiceovers in multiple languages to make your content globally accessible.",
       icon: <TrendingUp className="w-4 h-4 text-yellow-400" />,
-      tags: ["ML", "Forecast"],
+      tags: ["AI", "Voice", "Translation"],
       colSpan: 2,
     },
     {
-      title: "Global Distribution",
-      meta: "40+ Platforms",
+      title: "BGM Suggestor",
+      meta: "AUDIO AI",
       description:
-        "Instant publishing across YouTube, Instagram, TikTok & LinkedIn.",
+        "AI recommends background music that matches the emotion and pacing of your video.",
       icon: <Globe className="w-4 h-4 text-emerald-400" />,
       status: "Active",
-      tags: ["Automation", "Multi-Platform"],
+      tags: ["AI", "Audio", "Music"],
     },
   ];
 
@@ -52,10 +52,10 @@ export default function ScrollFeatureCards() {
         titleComponent={
           <>
             <h2 className="text-3xl md:text-6xl font-bold text-white">
-              How ContentIQ Works
+              Features
             </h2>
             <p className="text-neutral-400 mt-4 text-lg">
-              Scroll to experience the AI engine in action.
+              Core AI systems powering ContentIQ’s media intelligence engine.
             </p>
           </>
         }

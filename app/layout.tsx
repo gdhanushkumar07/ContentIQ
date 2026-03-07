@@ -6,8 +6,16 @@ import { authOptions } from '@/lib/auth'
 import { ThemeProvider } from '@/components/ThemeProvider'
 
 export const metadata: Metadata = {
-  title: 'ContentIQ — Raw Footage to Viral Gold',
-  description: 'AI-powered scene intelligence, engagement prediction, and automated distribution.',
+  title: "ContentIQ",
+  description: "AI Media Creation & Distribution Platform",
+  icons: {
+    icon: [
+      { url: "/favicon.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon.png", sizes: "16x16", type: "image/png" }
+    ],
+    shortcut: "/favicon.png",
+    apple: "/favicon.png"
+  }
 }
 
 export default async function RootLayout({

@@ -2,6 +2,7 @@
 
 import { useRef, useEffect, useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import PlexusBackground from '@/components/PlexusBackground'
 import { motion, useScroll, useTransform, useMotionValue, useSpring, AnimatePresence } from 'framer-motion'
 import {
@@ -14,6 +15,7 @@ import { NavBar } from '@/components/ui/tubelight-navbar'
 import HowItWorksTimeline from "@/components/sections/how-it-works-timeline";
 import ScrollFeatureCards from "@/components/sections/scroll-feature-cards";
 import TechStackLayered from "@/components/sections/tech-stack-layered";
+import RadialIntro from "@/components/ui/radial-intro";
 
 // ─── Grid Background ───────────────────────────────────────────────────────────
 function GridBackground() {
@@ -83,25 +85,30 @@ function HeroSection() {
       <motion.h1
         initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.9, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-        className="font-mokoto text-6xl md:text-7xl font-bold tracking-wide"
-        style={{ lineHeight: 1.05, maxWidth: 920, marginBottom: 28, color: '#FFFFFF' }}>
+        className="font-mokoto text-6xl md:text-7xl tracking-wider leading-[1.15]"
+        style={{ maxWidth: 920, marginBottom: 28, color: '#FFFFFF' }}>
         Turn Raw Content<br />
-        <span className="bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
+        <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500 bg-clip-text text-transparent">
           Into Viral Impact
         </span>
       </motion.h1>
 
       <motion.p initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.3, ease: 'easeOut' }}
-        style={{ fontSize: 18, fontWeight: 400, color: '#A1A1AA', maxWidth: 560, lineHeight: 1.75, marginBottom: 52 }}>
+        className="mt-6 max-w-2xl text-lg text-white/70 font-poppins"
+        style={{ marginBottom: 52 }}>
         AI-powered scene intelligence, engagement prediction, and automated distribution — without losing your authentic voice.
       </motion.p>
 
       <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.45, ease: 'easeOut' }}
         style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
         <Link href="/signup">
-          <motion.button className="glow-btn" whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.96 }}
-            style={{ padding: '15px 34px', color: '#fff', fontWeight: 700, fontSize: 16, display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Sparkles size={18} /> Get Started Free
+          <motion.button
+            className="glow-btn"
+            whileHover={{ scale: 1.06 }}
+            whileTap={{ scale: 0.98 }}
+            style={{ padding: "15px 34px", color: "#fff", fontWeight: 700, fontSize: 16 }}
+          >
+            Get Started Free
           </motion.button>
         </Link>
         <Link href="/login">
@@ -114,11 +121,15 @@ function HeroSection() {
 
       <motion.div initial={{ opacity: 0, y: 36 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, delay: 0.65, ease: 'easeOut' }} style={{ marginTop: 80 }}>
         <motion.div className="stats-panel" animate={{ y: [0, -6, 0] }} transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}>
-          {[{ value: '70%', label: 'Faster Creation' }, { value: '40+', label: 'Platforms' }, { value: 'AI', label: 'Powered' }].map((stat, i) => (
+          {[
+            { value: 'Frame-Level AI', label: 'Scene Detection' }, 
+            { value: 'Smart Analysis', label: 'Content Intelligence' }, 
+            { value: 'AI Powered', label: 'Automation' }
+          ].map((stat, i) => (
             <span key={stat.label} style={{ display: 'contents' }}>
               {i > 0 && <div className="stat-divider" />}
               <div className="stat-item">
-                <div className="stat-value">{stat.value}</div>
+                <div className="stat-value" style={{ fontSize: '28px' }}>{stat.value}</div>
                 <div className="stat-label">{stat.label}</div>
               </div>
             </span>
@@ -143,40 +154,53 @@ function HeroSection() {
 
 function FooterCTA() {
   return (
-    <section style={{ padding: '120px 24px', position: 'relative', zIndex: 1 }}>
-      <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8 }}
-        className="glass-card"
-        style={{ maxWidth: 860, margin: '0 auto', padding: '80px 60px', textAlign: 'center', background: 'linear-gradient(135deg, rgba(0,212,255,0.04), rgba(124,58,237,0.06))' }}>
-        <motion.div animate={{ rotate: [0, 360] }} transition={{ duration: 20, repeat: Infinity, ease: 'linear' }} style={{ display: 'inline-block', marginBottom: 24 }}>
-          <Sparkles size={40} color="#00d4ff" />
-        </motion.div>
-        <h2 style={{ fontSize: 'clamp(28px, 4vw, 52px)', fontWeight: 800, letterSpacing: '-1px', marginBottom: 20 }}>
+    <>
+      <section className="relative flex flex-col items-center justify-center py-20 z-10">
+        
+        <div className="relative flex items-center justify-center">
+          {/* Orbit Container surrounding the card */}
+          <RadialIntro />
+
+          {/* Circular Hero Card */}
+          <motion.div initial={{ opacity: 0, y: 40, scale: 0.95 }} whileInView={{ opacity: 1, y: 0, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.8, type: "spring", bounce: 0.3 }}
+            className="relative w-[560px] h-[560px] rounded-full bg-white/5 backdrop-blur-xl border border-white/10 flex flex-col items-center justify-center text-center px-10 shadow-2xl z-10"
+          >
+          <Image
+            src="/logo.png"
+            alt="ContentIQ"
+            width={56}
+            height={56}
+            className="object-contain mx-auto mb-6 rounded-2xl shadow-[0_0_30px_rgba(56,189,248,0.3)]"
+            priority
+          />
+
+        <h2 className="mokoto-font text-4xl md:text-5xl lg:text-6xl font-semibold text-center leading-tight mb-6 mt-4">
           Ready to make content go <span className="gradient-text">viral?</span>
         </h2>
-        <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 17, maxWidth: 480, margin: '0 auto 48px', lineHeight: 1.7 }}>
+        
+        <p className="text-white/60 text-base md:text-lg max-w-[360px] mx-auto mb-8 leading-relaxed font-poppins">
           Join ContentIQ — the AI platform that transforms raw footage into global reach, automatically.
         </p>
+        
         <Link href="/signup">
-          <motion.button className="glow-btn" animate={{ y: [0, -5, 0] }} transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+          <motion.button className="glow-btn" animate={{ y: [0, -3, 0] }} transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
             whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.97 }}
-            style={{ padding: '16px 40px', color: '#fff', fontWeight: 700, fontSize: 16, display: 'inline-flex', alignItems: 'center', gap: 10 }}>
-            <Upload size={20} /> Get Early Access
+            style={{ padding: '14px 32px', color: '#fff', fontWeight: 700, fontSize: 16, display: 'inline-flex', alignItems: 'center', gap: 10 }}>
+            <Upload size={18} /> Get Early Access
           </motion.button>
         </Link>
-        <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: 13, marginTop: 24 }}>
-          Built for Hackathon 2026 · AI-for-Bharat Initiative
-        </p>
-      </motion.div>
-      <div style={{ textAlign: 'center', marginTop: 60, color: 'rgba(255,255,255,0.2)', fontSize: 13 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 12 }}>
-          <div style={{ width: 24, height: 24, borderRadius: 7, background: 'linear-gradient(135deg, #00d4ff, #7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Sparkles size={12} color="#fff" />
-          </div>
-          <span style={{ fontWeight: 600, color: 'rgba(255,255,255,0.4)' }}>ContentIQ</span>
+          </motion.div>
         </div>
-        © 2026 ContentIQ · AI Media Creation & Distribution Platform
+      </section>
+
+    <div className="text-center mt-24 opacity-60 text-sm relative z-10 pb-16">
+      <div className="flex items-center justify-center gap-2 mb-2">
+        <Image src="/logo.png" alt="ContentIQ" width={24} height={24} className="object-contain rounded-md" />
+        <span>ContentIQ</span>
       </div>
-    </section>
+      © 2026 ContentIQ · AI Media Creation & Distribution Platform
+    </div>
+    </>
   )
 }
 

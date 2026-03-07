@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { LucideIcon, Sparkles, ChevronRight, Menu, X } from 'lucide-react'
 
@@ -75,7 +76,7 @@ export function NavBar({ items, className = '' }: NavBarProps) {
             whileHover={{ scale: 1.03 }}
           >
             <Link href="#home" className="flex items-center gap-2.5">
-              <img src="/logo.png" alt="ContentIQ Logo" className="h-[36px] object-contain" />
+              <Image src="/logo.png" alt="ContentIQ" width={32} height={32} className="h-8 w-auto object-contain" />
               <span className="text-lg font-bold tracking-tight text-white">
                 Content<span className="gradient-text">IQ</span>
               </span>

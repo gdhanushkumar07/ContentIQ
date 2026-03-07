@@ -7,6 +7,11 @@
   font-style: normal;
 }
 
+.mokoto-font {
+  font-family: "Mokoto", sans-serif;
+  letter-spacing: 2px;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
