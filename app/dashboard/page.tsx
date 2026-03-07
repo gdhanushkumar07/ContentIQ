@@ -45,7 +45,7 @@ const recentActivity = [
 ]
 
 function CalendarWidget() {
-  const [currentDate, setCurrentDate] = useState(new Date(2026, 2, 6)) // Default to March 6, 2026
+  const [currentDate, setCurrentDate] = useState(new Date())
 
   const prevMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))
   const nextMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))
@@ -61,8 +61,9 @@ function CalendarWidget() {
   for (let i = firstDayOfMonth - 1; i >= 0; i--) {
     days.push({ day: prevMonthDays - i, isCurrentMonth: false })
   }
+  const realToday = new Date()
   for (let i = 1; i <= daysInMonth; i++) {
-    const isToday = i === 6 && currentDate.getMonth() === 2 && currentDate.getFullYear() === 2026
+    const isToday = i === realToday.getDate() && currentDate.getMonth() === realToday.getMonth() && currentDate.getFullYear() === realToday.getFullYear()
     days.push({ day: i, isCurrentMonth: true, isToday })
   }
   const remainingSlots = 42 - days.length
@@ -135,7 +136,7 @@ export default function DashboardPage() {
 
         {/* Quick Access Grid */}
         <div className="mt-4">
-          <h2 className="text-[16px] font-medium text-[var(--text-primary)] mb-4" >Recent Activity</h2>
+          <h2 className="text-[16px] font-medium text-[var(--text-primary)] mb-4">Recent Activity</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {quickAccessItems.map((item, i) => (
               <Link href={item.href} key={i}>

@@ -53,7 +53,7 @@ export default function TranslationForm() {
     };
 
     return (
-        <div className="w-full max-w-5xl space-y-6">
+        <div className="w-full space-y-6">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="glass-card p-6 md:p-8 rounded-2xl relative overflow-hidden h-full border border-purple-500/20">
 
                 {/* Decorative background glow */}

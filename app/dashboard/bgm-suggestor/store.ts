@@ -106,13 +106,13 @@ export async function generateBgm() {
 
         store.setState({
             extractedText: data.extractedText || "No text could be extracted.",
-            suggestions: data.suggestions ? data.suggestions : DUMMY_SUGGESTIONS
+            suggestions: data.suggestions ? data.suggestions : []
         });
     } catch (err: any) {
         console.error(err);
         store.setState({
             errorMsg: err.message || "An error occurred",
-            suggestions: DUMMY_SUGGESTIONS
+            suggestions: []
         });
     } finally {
         store.setState({ loading: false });

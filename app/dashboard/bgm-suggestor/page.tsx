@@ -4,7 +4,7 @@
 import { useState, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { MusicalNoteIcon, CloudArrowUpIcon, DocumentTextIcon } from '@heroicons/react/24/outline'
-import { Play, Heart, Plus, Square, Loader2, X } from 'lucide-react'
+import { Play, Heart, Plus, Square, Loader2, X, Download } from 'lucide-react'
 import { bgmSuggestorStore, generateBgm, useBgmSuggestorStore, TONES } from './store'
 
 export default function BGMSuggestorPage() {
@@ -63,8 +63,43 @@ export default function BGMSuggestorPage() {
     }
   }
 
+  const handleDownload = (track: any) => {
+    if (track.audioBase64) {
+      try {
+        const binaryStr = window.atob(track.audioBase64);
+        const len = binaryStr.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+          bytes[i] = binaryStr.charCodeAt(i);
+        }
+
+        // Use application/octet-stream to force Chrome to download instead of treating it as an insecure playable object
+        const blob = new Blob([bytes], { type: 'application/octet-stream' });
+        const url = window.URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+
+        const cleanName = track.title ? track.title.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase() : 'bgm_track';
+        a.download = `${cleanName}_bgm.mp3`;
+
+        document.body.appendChild(a);
+        a.click();
+
+        // Massive timeout to ensure Chrome download manager has fully captured the stream before we destroy it
+        setTimeout(() => {
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+        }, 10000);
+      } catch (err) {
+        console.error("Failed to force download audio:", err);
+      }
+    }
+  }
+
   return (
-    <div className="space-y-8 max-w-5xl">
+    <div className="space-y-8 w-full">
       <audio ref={audioRef} onEnded={() => setPlayingIdx(null)} />
 
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
@@ -291,7 +326,17 @@ export default function BGMSuggestorPage() {
               <span className="text-sm font-bold" style={{ color: '#10b981', minWidth: 40, textAlign: 'right' }}>{track.match}</span>
 
               {/* Actions */}
-              <div className="flex gap-2 ml-2">
+              <div className="flex gap-2 ml-2 items-center">
+                {track.audioBase64 && (
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    onClick={() => handleDownload(track)}
+                    className="p-2 rounded-lg" style={{ background: 'rgba(255,255,255,0.07)' }}
+                    title="Download Audio"
+                  >
+                    <Download size={14} className="text-zinc-300 hover:text-white transition-colors" />
+                  </motion.button>
+                )}
                 <motion.button whileHover={{ scale: 1.1 }} onClick={() => setLiked(s => { const n = new Set(s); n.has(i) ? n.delete(i) : n.add(i); return n })}
                   className="p-2 rounded-lg" style={{ background: 'rgba(255,255,255,0.05)' }}>
                   <Heart size={14} style={{ color: liked.has(i) ? '#ec4899' : 'rgba(255,255,255,0.4)', fill: liked.has(i) ? '#ec4899' : 'none' }} />
@@ -302,8 +347,16 @@ export default function BGMSuggestorPage() {
               </div>
             </div>
           ))}
+
+          {/* Chrome Download Warning */}
+          <div className="px-6 py-4 text-center border-t border-white/[0.06]">
+            <p className="text-xs text-zinc-500 italic">
+              * Note: Direct audio downloading is currently not fully supported in Google Chrome due to browser security restrictions. For the best downloading experience, please use Firefox or Safari.
+            </p>
+          </div>
         </motion.div>
-      )}
-    </div>
+      )
+      }
+    </div >
   )
 }

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { signOut, useSession } from 'next-auth/react'
+import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Bell, ChevronDown, LogOut, User, Settings } from 'lucide-react'
 import ThemeToggle from './ThemeToggle'
@@ -9,6 +10,20 @@ import ThemeToggle from './ThemeToggle'
 export default function DashboardNav() {
   const { data: session } = useSession()
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const pathname = usePathname()
+
+  const getPageTitle = () => {
+    if (!pathname) return 'Dashboard'
+    if (pathname.includes('/video-intelligence')) return 'Video Intelligence'
+    if (pathname.includes('/script-generator')) return 'Script Generator'
+    if (pathname.includes('/distribution')) return 'Distribution'
+    if (pathname.includes('/privacy-filter')) return 'Privacy Filter'
+    if (pathname.includes('/voice-tracker')) return 'Voice Tracker'
+    if (pathname.includes('/translator')) return 'Multilingual Dubbing'
+    if (pathname.includes('/thumbnail-analyzer')) return 'Thumbnail Analyzer'
+    if (pathname.includes('/bgm-suggestor')) return 'BGM Suggestor'
+    return 'Dashboard'
+  }
 
   const initials = session?.user?.name
     ? session.user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
@@ -37,7 +52,7 @@ export default function DashboardNav() {
         <div className="hidden sm:flex items-center gap-3">
           <img src="/logo.png" alt="ContentIQ Logo" className="h-8 w-8 object-contain" />
           <span className="text-xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
-            Dashboard
+            {getPageTitle()}
           </span>
         </div>
       </div>

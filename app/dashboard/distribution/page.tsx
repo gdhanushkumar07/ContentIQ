@@ -69,7 +69,7 @@ export default function DistributionPage() {
         </div>
       </header>
 
-      <main className="p-6 lg:p-8 max-w-7xl mx-auto space-y-8">
+      <main className="p-6 lg:p-8 w-full mx-auto space-y-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
           {/* Input Section */}

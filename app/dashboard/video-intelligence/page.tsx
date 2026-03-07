@@ -148,23 +148,18 @@ const STAGES: any[] = [
 
 function AnalysisProgress({ currentStage }: { currentStage: number }) {
   return (
-    <div style={{ maxWidth: 640, margin: '0 auto', padding: '48px 0' }}>
-      <div style={{ textAlign: 'center', marginBottom: 32 }}>
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
-          <div style={{
-            width: 64, height: 64, borderRadius: '50%',
-            background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.4)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            animation: 'spin 2.5s linear infinite',
-          }}>
-            <SparklesIcon style={{ width: 28, height: 28, color: '#a78bfa' }} />
+    <div className="max-w-[640px] mx-auto py-12 px-6 lg:px-0">
+      <div className="text-center mb-8">
+        <div className="flex justify-center mb-4">
+          <div className="w-16 h-16 rounded-full flex items-center justify-center bg-[#F3E8FF] dark:bg-purple-500/15 border border-[#E9D5FF] dark:border-purple-500/40 animate-[spin_2.5s_linear_infinite]">
+            <SparklesIcon className="w-7 h-7 text-[#A855F7] dark:text-purple-400" />
           </div>
         </div>
-        <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 6 }}>Analyzing your video</h2>
-        <p style={{ color: '#64748b', fontSize: 13 }}>Running through parallel intelligence stages — this takes ~30s</p>
+        <h2 className="text-[20px] font-bold mb-1.5 text-slate-800 dark:text-white">Analyzing your video</h2>
+        <p className="text-[13px] text-slate-500 dark:text-[#64748b]">Running through parallel intelligence stages — this takes ~30s</p>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div className="flex flex-col gap-2">
         {STAGES.map(s => {
           const done = s.id < currentStage
           const active = s.id === currentStage
@@ -172,31 +167,19 @@ function AnalysisProgress({ currentStage }: { currentStage: number }) {
 
           if (s.isParallel) {
             return (
-              <div key={s.id} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              <div key={s.id} className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {s.tasks.map((task: any, idx: number) => (
-                  <div key={idx} style={{
-                    display: 'flex', alignItems: 'flex-start', gap: 12,
-                    padding: '12px 14px', borderRadius: 12,
-                    background: active ? 'rgba(56,189,248,0.12)' : done ? 'rgba(34,197,94,0.07)' : 'rgba(255,255,255,0.03)',
-                    border: active ? '1px solid rgba(56,189,248,0.4)' : done ? '1px solid rgba(34,197,94,0.2)' : '1px solid rgba(255,255,255,0.05)',
-                    transition: 'all 0.3s ease',
-                    opacity: pending ? 0.4 : 1,
-                  }}>
-                    <div style={{
-                      width: 26, height: 26, borderRadius: '50%', flexShrink: 0,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700,
-                      background: done ? '#22c55e' : active ? '#38bdf8' : 'rgba(255,255,255,0.06)',
-                      color: done || active ? '#fff' : '#64748b',
-                      boxShadow: active ? '0 0 12px rgba(56,189,248,0.5)' : 'none',
-                      marginTop: 2
-                    }}>
+                  <div key={idx} className={`flex items-start gap-3 px-[14px] py-[12px] rounded-xl transition-all duration-300 ${active ? 'bg-[#F0F9FF] dark:bg-[#38bdf8]/12 border border-[#BAE6FD] dark:border-[#38bdf8]/40' : done ? 'bg-[#F0FDF4] dark:bg-[#22c55e]/[0.07] border border-[#BBF7D0] dark:border-[#22c55e]/20' : 'bg-transparent dark:bg-white/[0.03] border border-transparent dark:border-white/5'} ${pending ? 'opacity-40' : 'opacity-100'}`}>
+                    <div className={`w-[26px] h-[26px] rounded-full shrink-0 flex items-center justify-center text-[11px] font-bold mt-0.5 ${done ? 'bg-[#22c55e] text-white' : active ? 'bg-[#38bdf8] text-white shadow-[0_0_12px_rgba(56,189,248,0.5)]' : 'bg-[#F1F5F9] dark:bg-white/[0.06] text-slate-500 dark:text-slate-400'}`}>
                       {done ? '✓' : `${s.id}${idx === 0 ? 'A' : 'B'}`}
                     </div>
                     <div>
-                      <div style={{ fontSize: 12.5, fontWeight: active ? 700 : 500, color: active ? '#7dd3fc' : done ? '#4ade80' : '#e2e8f0', marginBottom: 2 }}>
+                      <div className={`text-[12.5px] mb-0.5 ${active ? 'font-bold text-[#0284C7] dark:text-[#7dd3fc]' : done ? 'font-medium text-[#166534] dark:text-[#4ade80]' : 'font-medium text-slate-700 dark:text-[#e2e8f0]'}`}>
                         {task.label}
                       </div>
-                      <div style={{ fontSize: 11, color: active ? '#bae6fd' : '#475569', lineHeight: 1.3 }}>{task.sub}</div>
+                      <div className={`text-[11px] leading-[1.3] ${active ? 'text-[#0369A1] dark:text-[#bae6fd]' : 'text-slate-500 dark:text-[#475569]'}`}>
+                        {task.sub}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -205,30 +188,17 @@ function AnalysisProgress({ currentStage }: { currentStage: number }) {
           }
 
           return (
-            <div key={s.id} style={{
-              display: 'flex', alignItems: 'center', gap: 12,
-              padding: '10px 16px', borderRadius: 12,
-              background: active ? 'rgba(139,92,246,0.12)' :
-                done ? 'rgba(34,197,94,0.07)' : 'rgba(255,255,255,0.03)',
-              border: active ? '1px solid rgba(139,92,246,0.4)' :
-                done ? '1px solid rgba(34,197,94,0.2)' : '1px solid rgba(255,255,255,0.05)',
-              transition: 'all 0.3s ease',
-              opacity: pending ? 0.4 : 1,
-            }}>
-              <div style={{
-                width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
-                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700,
-                background: done ? '#22c55e' : active ? '#8b5cf6' : 'rgba(255,255,255,0.06)',
-                color: done || active ? '#fff' : '#64748b',
-                boxShadow: active ? '0 0 12px rgba(139,92,246,0.6)' : 'none',
-              }}>
+            <div key={s.id} className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-300 ${active ? 'bg-[#F3E8FF] dark:bg-purple-500/12 border border-[#D8B4FE] dark:border-purple-500/40' : done ? 'bg-[#F0FDF4] dark:bg-[#22c55e]/[0.07] border border-[#BBF7D0] dark:border-[#22c55e]/20' : 'bg-transparent dark:bg-white/[0.03] border border-transparent dark:border-white/5'} ${pending ? 'opacity-40' : 'opacity-100'}`}>
+              <div className={`w-7 h-7 rounded-full shrink-0 flex items-center justify-center text-[12px] font-bold ${done ? 'bg-[#22c55e] text-white' : active ? 'bg-[#8B5CF6] text-white shadow-[0_0_12px_rgba(139,92,246,0.5)]' : 'bg-[#F1F5F9] dark:bg-white/[0.06] text-slate-500 dark:text-slate-400'}`}>
                 {done ? '✓' : s.id}
               </div>
               <div>
-                <div style={{ fontSize: 13, fontWeight: active ? 700 : 500, color: active ? '#c4b5fd' : done ? '#4ade80' : '#e2e8f0' }}>
+                <div className={`text-[13px] ${active ? 'font-bold text-[#6D28D9] dark:text-[#c4b5fd]' : done ? 'font-medium text-[#166534] dark:text-[#4ade80]' : 'font-medium text-slate-700 dark:text-[#e2e8f0]'}`}>
                   {s.label}
                 </div>
-                <div style={{ fontSize: 11.5, color: '#475569' }}>{s.sub}</div>
+                <div className="text-[11.5px] text-slate-500 dark:text-[#475569]">
+                  {s.sub}
+                </div>
               </div>
             </div>
           )
@@ -265,48 +235,42 @@ export default function VideoIntelligencePage() {
   // ════════════════════════════════════════════════════════════════════════════
   if (stage === 0) {
     return (
-      <div className="space-y-8 max-w-6xl">
+      <div className="space-y-8 w-full">
         {/* Header */}
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center"
-            style={{ background: 'rgba(56,189,248,0.12)', border: '1px solid rgba(56,189,248,0.25)' }}>
-            <SparklesIcon style={{ width: 22, height: 22, color: '#38BDF8' }} />
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-[#F1F5F9] dark:bg-[#38BDF8]/12 border border-slate-200 dark:border-[#38BDF8]/25">
+            <SparklesIcon className="w-5 h-5 text-slate-700 dark:text-[#38BDF8]" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Video Intelligence</h1>
-            <p className="text-sm" style={{ color: '#A1A1AA' }}>
+            <h1 className="text-[22px] font-bold tracking-tight text-slate-900 dark:text-white">Video Intelligence</h1>
+            <p className="text-[13px] font-medium text-slate-500 dark:text-[#A1A1AA]">
               Pre-posting private evaluation — 10-stage AWS-native analysis
             </p>
           </div>
         </div>
 
         {/* Upload box */}
-        <div className="glass-card p-8 flex flex-col items-center justify-center text-center"
-          style={{ minHeight: 220, borderStyle: 'dashed', borderColor: 'rgba(139,92,246,0.35)' }}>
-          <SparklesIcon style={{ width: 40, height: 40, color: 'rgba(139,92,246,0.6)', marginBottom: 16 }} />
-          <h3 className="text-lg font-semibold mb-2">Upload your video for private evaluation</h3>
-          <p className="text-sm mb-2" style={{ color: '#A1A1AA', maxWidth: 440 }}>
+        <div className="bg-[#F8FAFC] dark:bg-white/5 dark:backdrop-blur-xl rounded-[32px] p-12 flex flex-col items-center justify-center text-center shadow-sm dark:shadow-none border border-slate-200/60 dark:border-white/10 dark:border-dashed"
+          style={{ minHeight: 460 }}>
+          <SparklesIcon className="w-10 h-10 text-[#312E81] dark:text-purple-400/60 mb-6" />
+          <h3 className="text-[22px] dark:text-lg font-bold dark:font-semibold mb-3 text-slate-900 dark:text-white tracking-tight">Upload your video for private evaluation</h3>
+          <p className="text-[14px] dark:text-sm mb-2 text-slate-600 dark:text-[#A1A1AA] leading-relaxed font-medium dark:font-normal" style={{ maxWidth: 520 }}>
             Your video stays private — never indexed, never shared. The AI simulates how a real audience
             would react, then gives you exact reshoot instructions per scene.
           </p>
-          <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 24 }}>
-            {['🔒 Private & encrypted', '🎬 10-stage pipeline', '📊 Per-scene scoring', '🎯 Reshoot direction'].map(t => (
-              <span key={t} style={{
-                fontSize: 12, color: '#94a3b8', background: 'rgba(139,92,246,0.08)',
-                border: '1px solid rgba(139,92,246,0.2)', borderRadius: 20, padding: '4px 12px'
-              }}>{t}</span>
-            ))}
+          <div className="flex flex-wrap items-center justify-center gap-3 mb-10 mt-6">
+            <span className="text-[13px] font-semibold text-slate-800 dark:text-[#e2e8f0] bg-[#FFEDD5] dark:bg-purple-500/20 px-4 py-2 rounded-full dark:border dark:border-purple-500/40">🔒 Private & encrypted</span>
+            <span className="text-[13px] font-semibold text-slate-800 dark:text-[#e2e8f0] bg-[#F3E8FF] dark:bg-purple-500/20 px-4 py-2 rounded-full dark:border dark:border-purple-500/40">🎬 10-stage pipeline</span>
+            <span className="text-[13px] font-semibold text-slate-800 dark:text-[#e2e8f0] bg-[#DCFCE7] dark:bg-purple-500/20 px-4 py-2 rounded-full dark:border dark:border-purple-500/40">📊 Per-scene scoring</span>
+            <span className="text-[13px] font-semibold text-slate-800 dark:text-[#e2e8f0] bg-[#E0F2FE] dark:bg-purple-500/20 px-4 py-2 rounded-full dark:border dark:border-purple-500/40">🎯 Reshoot direction</span>
           </div>
 
-          <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
-            <label style={{ fontSize: 13, color: '#94a3b8', fontWeight: 500 }}>Select Category:</label>
+          <div style={{ marginBottom: 32, display: 'flex', alignItems: 'center', gap: 12 }}>
+            <label className="text-[14px] text-slate-800 dark:text-slate-400 font-medium">Select Category:</label>
             <select
               value={category}
               onChange={(e) => videoIntelligenceStore.setState({ category: e.target.value })}
-              style={{
-                background: 'rgba(15,10,35,0.8)', color: '#e2e8f0', border: '1px solid rgba(139,92,246,0.4)',
-                borderRadius: 8, padding: '8px 16px', fontSize: 14, outline: 'none', cursor: 'pointer'
-              }}
+              className="bg-white dark:bg-purple-500/15 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-purple-500/60 rounded-xl px-4 py-2 text-[14px] dark:text-sm outline-none cursor-pointer font-medium shadow-sm dark:shadow-none transition-colors focus:ring-2 focus:ring-purple-500/20"
             >
               <option value="Tech Review">Tech Review</option>
               <option value="Comedy">Comedy</option>
@@ -320,7 +284,7 @@ export default function VideoIntelligencePage() {
           </div>
 
           <input type="file" accept="video/*" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileChange} />
-          <button onClick={() => fileInputRef.current?.click()} className="glow-btn px-8 py-3 text-white text-sm font-semibold">
+          <button onClick={() => fileInputRef.current?.click()} className="px-10 py-3.5 dark:py-3 text-white text-[15px] dark:text-sm font-semibold rounded-full transition-transform hover:scale-105 active:scale-95 shadow-[0_12px_24px_rgba(91,33,182,0.3)] dark:shadow-purple-500/20 bg-gradient-to-r from-[#6D28D9] to-[#4F46E5] dark:bg-transparent dark:glow-btn">
             Start Private Analysis
           </button>
           {error && <p style={{ color: '#f87171', fontSize: 13, marginTop: 16 }}>{error}</p>}
@@ -328,15 +292,14 @@ export default function VideoIntelligencePage() {
 
         {/* Feature cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {FEATURES.map(f => (
-            <div key={f.title} className="glass-card p-6 flex gap-4">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                style={{ background: 'rgba(139,92,246,0.10)', border: '1px solid rgba(139,92,246,0.2)' }}>
-                <f.icon size={20} style={{ color: '#a78bfa' }} />
+          {FEATURES.map((f, idx) => (
+            <div key={f.title} className="bg-white dark:bg-white/5 dark:backdrop-blur-xl rounded-[20px] p-6 flex gap-4 shadow-sm dark:shadow-none border border-slate-200 dark:border-white/10">
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${idx === 0 ? 'bg-[#F3E8FF] dark:bg-purple-500/10 border border-[#E9D5FF] dark:border-purple-500/20' : 'bg-[#FCE7F3] dark:bg-pink-500/10 border border-[#FBCFE8] dark:border-pink-500/20'}`}>
+                <f.icon className={`w-5 h-5 ${idx === 0 ? 'text-[#8B5CF6] dark:text-purple-400' : 'text-[#EC4899] dark:text-pink-400'}`} />
               </div>
               <div>
-                <h3 className="font-semibold mb-1">{f.title}</h3>
-                <p className="text-sm" style={{ color: '#A1A1AA', lineHeight: 1.6 }}>{f.desc}</p>
+                <h3 className="font-bold dark:font-semibold mb-1 text-[15px] dark:text-base text-slate-900 dark:text-white">{f.title}</h3>
+                <p className="text-[14px] dark:text-sm text-slate-600 dark:text-[#A1A1AA] font-medium dark:font-normal leading-relaxed">{f.desc}</p>
               </div>
             </div>
           ))}
@@ -365,282 +328,233 @@ export default function VideoIntelligencePage() {
   const lowScenes = scenes.filter(s => s.category === 'LOW')
 
   return (
-    <div style={{ maxWidth: 1100, color: '#e2e8f0', fontFamily: 'Inter, sans-serif' }}>
+    <div style={{ maxWidth: '100%', color: '#e2e8f0', fontFamily: 'Inter, sans-serif' }}>
 
       {/* ── Header bar ──────────────────────────────────────────────────────── */}
-      <div style={{
-        background: glassBg, border: glassBorder, borderRadius: 20,
-        padding: '18px 28px', display: 'flex', alignItems: 'center',
-        justifyContent: 'space-between', marginBottom: 24,
-        backdropFilter: 'blur(16px)', boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <div style={{
-            width: 38, height: 38, borderRadius: 10,
-            background: 'rgba(139,92,246,0.2)', border: '1px solid rgba(139,92,246,0.4)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <SparklesIcon style={{ width: 18, height: 18, color: '#a78bfa' }} />
+      <div className="bg-white dark:bg-[#120E28]/70 border border-slate-200 dark:border-purple-500/20 rounded-2xl px-6 py-4 flex items-center justify-between mb-6 shadow-sm dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] dark:backdrop-blur-md">
+        <div className="flex items-center gap-3.5">
+          <div className="w-10 h-10 rounded-xl bg-slate-900 dark:bg-purple-500/20 flex items-center justify-center">
+            <SparklesIcon className="w-5 h-5 text-purple-400 dark:text-purple-300" />
           </div>
           <div>
-            <div style={{ fontWeight: 700, fontSize: 16 }}>Intelligence Report</div>
-            <div style={{ color: '#a78bfa', fontSize: 12, marginTop: 2 }}>
+            <div className="font-bold text-[17px] text-slate-900 dark:text-white">Intelligence Report</div>
+            <div className="text-slate-500 dark:text-purple-400 text-[12px] mt-0.5 font-medium">
               {result.totalScenes} scenes · {videoMeta.estimatedDuration} · {videoMeta.fileSizeMB} MB
             </div>
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 28 }}>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ color: '#94a3b8', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 3 }}>High Scenes</div>
-            <div style={{ fontWeight: 700, fontSize: 18, color: '#4ade80' }}>{highEngagementCount}</div>
+        <div className="flex items-center gap-7">
+          <div className="text-center">
+            <div className="text-slate-500 dark:text-slate-400 text-[10px] tracking-wider uppercase mb-1 font-bold">High Scenes</div>
+            <div className="font-bold text-[18px] text-[#22c55e]">{highEngagementCount}</div>
           </div>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ color: '#94a3b8', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 3 }}>Low Scenes</div>
-            <div style={{ fontWeight: 700, fontSize: 18, color: '#f87171' }}>{lowEngagementCount}</div>
+          <div className="text-center">
+            <div className="text-[#991B1B] dark:text-slate-400 text-[10px] tracking-wider uppercase mb-1 font-bold">Low Scenes</div>
+            <div className="font-bold text-[18px] text-[#DC2626]">{lowEngagementCount}</div>
           </div>
           <button
             onClick={reset}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 8, padding: '9px 18px', borderRadius: 12,
-              background: 'transparent', border: '1px solid rgba(139,92,246,0.45)',
-              color: '#c4b5fd', fontWeight: 600, fontSize: 13, cursor: 'pointer',
-            }}
-            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(139,92,246,0.15)')}
-            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-transparent border border-slate-300 dark:border-purple-500/45 text-slate-700 dark:text-[#c4b5fd] font-semibold text-[13px] hover:bg-slate-50 dark:hover:bg-purple-500/15 transition-colors ml-2"
           >
-            <RefreshCcw size={13} /> New Analysis
+            <RefreshCcw className="w-3.5 h-3.5" /> New Analysis
           </button>
         </div>
       </div>
 
       {/* ── Bento row: signal overview ───────────────────────────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 200px 1fr', gap: 18, marginBottom: 24 }}>
+      <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.1fr)_200px_minmax(0,1.9fr)] gap-5 mb-6">
 
-        {/* Low engagement zones */}
-        <div style={{ background: glassBg, border: glassBorder, borderRadius: 20, padding: 20, backdropFilter: 'blur(16px)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-            <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#ef4444', boxShadow: '0 0 8px rgba(239,68,68,0.7)' }} />
-            <span style={{ fontWeight: 700, fontSize: 14 }}>Recommended Deletions</span>
+        {/* Low engagement & Actions */}
+        <div className="bg-white dark:bg-[#120E28]/70 border border-slate-200 dark:border-purple-500/20 rounded-[24px] p-6 shadow-sm dark:shadow-none dark:backdrop-blur-md">
+          <div className="flex items-center gap-2 mb-5">
+            <div className="w-2 h-2 rounded-full bg-[#ef4444] shadow-[0_0_8px_rgba(239,68,68,0.7)]" />
+            <span className="font-bold text-[15px] text-slate-900 dark:text-white">Recommended Deletions</span>
           </div>
           {lowScenes.length === 0 ? (
-            <div style={{
-              background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)',
-              borderRadius: 10, padding: '12px 14px', fontSize: 13, color: '#4ade80', fontStyle: 'italic'
-            }}>
+            <div className="bg-[#f0fdf4] dark:bg-[#22c55e]/[0.08] border border-[#bbf7d0] dark:border-[#22c55e]/20 rounded-xl px-4 py-3.5 text-[14px] text-[#166534] dark:text-[#4ade80] italic">
               No critical drop-off zones detected 🎉
             </div>
           ) : (
-            lowScenes.map((s, i) => (
-              <div key={i} style={{
-                background: 'rgba(239,68,68,0.09)', border: '1px solid rgba(239,68,68,0.22)',
-                borderRadius: 10, padding: '10px 14px', marginBottom: 8, fontSize: 13, color: '#fca5a5'
-              }}>
-                <strong>{s.timestamp}</strong> — {s.whyItFailed ?? 'Low engagement zone'}
-              </div>
-            ))
+            <div className="flex flex-col gap-2.5">
+              {lowScenes.map((s, i) => (
+                <div key={i} className="bg-[#fef2f2] dark:bg-[#ef4444]/[0.09] border border-[#fecaca] dark:border-[#ef4444]/20 rounded-xl px-4 py-3.5 text-[14px] text-[#991b1b] dark:text-[#fca5a5]">
+                  <strong className="text-slate-900 dark:text-white">{s.timestamp}</strong> — {s.whyItFailed ?? 'Low engagement zone'}
+                </div>
+              ))}
+            </div>
           )}
 
-          <div style={{ height: 1, background: 'rgba(139,92,246,0.12)', margin: '16px 0' }} />
+          <div className="h-px bg-slate-200 dark:bg-purple-500/10 my-6" />
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-            <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 8px rgba(34,197,94,0.7)' }} />
-            <span style={{ fontWeight: 700, fontSize: 14 }}>Improvement Actions</span>
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-2 h-2 rounded-full bg-[#22c55e] shadow-[0_0_8px_rgba(34,197,94,0.7)]" />
+            <span className="font-bold text-[15px] text-slate-900 dark:text-white">Improvement Actions</span>
           </div>
-          {improvementTips.map((tip, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 8 }}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5"
-                strokeLinecap="round" strokeLinejoin="round" style={{ marginTop: 1, flexShrink: 0 }}>
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />
-              </svg>
-              <span style={{ fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.55 }}>{tip}</span>
-            </div>
-          ))}
+          <div className="flex flex-col gap-3">
+            {improvementTips.map((tip, i) => (
+              <div key={i} className="flex items-start gap-3">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="mt-[2.5px] shrink-0">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+                <span className="text-[13px] text-slate-700 dark:text-[#cbd5e1] leading-relaxed">{tip}</span>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Avg score ring */}
-        <div style={{
-          background: glassBg, border: glassBorder, borderRadius: 20, padding: 20,
-          backdropFilter: 'blur(16px)', display: 'flex', flexDirection: 'column', alignItems: 'center',
-          justifyContent: 'center', gap: 16
-        }}>
+        <div className="bg-white dark:bg-[#120E28]/70 border border-slate-200 dark:border-purple-500/20 rounded-[24px] p-6 flex flex-col items-center justify-center gap-5 shadow-sm dark:shadow-none dark:backdrop-blur-md">
           <CircularProgress score={avgEngagementScore} size={140} />
-          <div style={{ textAlign: 'center' }}>
-            <div style={{
-              fontWeight: 700, fontSize: 12, letterSpacing: '0.08em', textTransform: 'uppercase',
-              color: '#94a3b8', marginBottom: 6
-            }}>AVG ENGAGEMENT</div>
-            <div style={{ fontSize: 11.5, color: '#475569', lineHeight: 1.6 }}>
-              Across all {result.totalScenes} scenes
+          <div className="text-center">
+            <div className="font-bold text-[12px] tracking-wider uppercase text-slate-500 dark:text-[#94a3b8] mb-1">
+              AVG ENGAGEMENT
             </div>
           </div>
         </div>
 
-        {/* Signal breakdown */}
-        <div style={{
-          background: glassBg, border: glassBorder, borderRadius: 20, padding: 20,
-          backdropFilter: 'blur(16px)', display: 'flex', flexDirection: 'column', gap: 0
-        }}>
-          <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 16 }}>Signal Breakdown (avg)</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        {/* Signal breakdown - refactoring inside to grid layout exactly like screenshot */}
+        <div className="bg-white dark:bg-[#120E28]/70 border border-slate-200 dark:border-purple-500/20 rounded-[24px] p-6 lg:p-7 shadow-sm dark:shadow-none dark:backdrop-blur-md flex flex-col">
+          <div className="font-bold text-[18px] mb-6 text-slate-900 dark:text-white tracking-wide">Signal Breakdown (avg)</div>
+
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 flex-1">
             {(() => {
-              const avgDel = Math.round(scenes.reduce((a, s) => a + s.deliveryQuality, 0) / scenes.length)
-              const avgVis = Math.round(scenes.reduce((a, s) => a + s.visualVariation, 0) / scenes.length)
-              const avgSem = Math.round(scenes.reduce((a, s) => a + s.semanticInterest, 0) / scenes.length)
-              return (
-                <>
-                  <SignalBar label="Speech & Delivery" value={avgDel} icon={Mic} color="#38bdf8" />
-                  <SignalBar label="Visual Variation" value={avgVis} icon={Eye} color="#a78bfa" />
-                  <SignalBar label="Semantic Interest" value={avgSem} icon={Brain} color="#34d399" />
-                  <SignalBar label="Overall Score" value={avgEngagementScore} icon={BarChart2} color="#f59e0b" />
-                </>
-              )
+              const signals = [
+                { label: 'Category Suitability', val: result.categorySuitabilityScore, icon: Target, c: '#a855f7' },
+                { label: 'Hook Strength', val: result.hookStrength, icon: Zap, c: '#eab308' },
+                { label: 'Content Value', val: result.contentValue, icon: Brain, c: '#22c55e' },
+                { label: 'Information Density', val: result.informationDensity, icon: BarChart2, c: '#0ea5e9' },
+                { label: 'Delivery Strength', val: result.deliveryStrength, icon: Mic, c: '#8b5cf6' },
+                { label: 'Visual Quality', val: result.visualQuality, icon: Eye, c: '#10b981' },
+                { label: 'Editing Quality', val: result.editingQuality, icon: Clock, c: '#ec4899' },
+                { label: 'Emotional Impact', val: result.emotionalImpact, icon: TrendingUp, c: '#ef4444' },
+                { label: 'Competitor Benchmark', val: result.competitorBenchmark, icon: Target, c: '#f59e0b' },
+                { label: 'Content Uniqueness', val: result.contentUniqueness, icon: SparklesIcon, c: '#d946ef' },
+              ]
+              // Taking top 8 to fit perfectly in a 4x2 grid like the image
+              return signals.slice(0, 8).map(s => (
+                <div key={s.label} className="border border-slate-200 dark:border-[#2A2440] rounded-[18px] p-4 sm:p-5 flex flex-col justify-between h-full min-h-[160px] bg-white dark:bg-transparent shadow-[0_2px_10px_rgba(0,0,0,0.03)] dark:shadow-none">
+                  <div className="flex items-center justify-between mb-4">
+                    <s.icon size={22} style={{ color: s.c }} />
+                    <span className="font-extrabold text-[20px]" style={{ color: s.c }}>{s.val}%</span>
+                  </div>
+                  <div>
+                    <div className="text-[14px] font-bold text-slate-800 dark:text-white/90 mb-3 leading-tight pr-4">{s.label}</div>
+                    <div className="h-[5px] rounded-full bg-slate-200 dark:bg-[#2A2440] overflow-hidden">
+                      <div className="h-full rounded-full" style={{ width: `${s.val}%`, backgroundColor: s.c }} />
+                    </div>
+                  </div>
+                </div>
+              ))
             })()}
           </div>
         </div>
       </div>
 
       {/* ── 15-Point Video Intelligence Report ───────────────────────────────────────── */}
-      <div style={{ marginBottom: 32 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
-          <Brain size={18} style={{ color: '#a78bfa' }} />
-          <h2 style={{ fontWeight: 700, fontSize: 17 }}>Comprehensive Intelligence Report</h2>
+      <div className="mb-8">
+        <div className="flex items-center gap-2.5 mb-5">
+          <Brain className="w-[18px] h-[18px] text-purple-600 dark:text-[#a78bfa]" />
+          <h2 className="font-bold text-[17px] text-slate-800 dark:text-white">Comprehensive Intelligence Report</h2>
         </div>
 
-        <div style={{
-          display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16
-        }}>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
           {[
-            { label: 'Category Suitability', value: result.categorySuitabilityScore, icon: Target, c: '#a78bfa' },
-            { label: 'Hook Strength', value: result.hookStrength, icon: Zap, c: '#f59e0b' },
-            { label: 'Content Value', value: result.contentValue, icon: Brain, c: '#34d399' },
-            { label: 'Information Density', value: result.informationDensity, icon: BarChart2, c: '#38bdf8' },
-            { label: 'Delivery Strength', value: result.deliveryStrength, icon: Mic, c: '#a78bfa' },
-            { label: 'Visual Quality', value: result.visualQuality, icon: Eye, c: '#22c55e' },
-            { label: 'Editing Quality', value: result.editingQuality, icon: Clock, c: '#f472b6' },
+            { label: 'Category Suitability', value: result.categorySuitabilityScore, icon: Target, c: '#a855f7' },
+            { label: 'Hook Strength', value: result.hookStrength, icon: Zap, c: '#eab308' },
+            { label: 'Content Value', value: result.contentValue, icon: Brain, c: '#22c55e' },
+            { label: 'Information Density', value: result.informationDensity, icon: BarChart2, c: '#0ea5e9' },
+            { label: 'Delivery Strength', value: result.deliveryStrength, icon: Mic, c: '#8b5cf6' },
+            { label: 'Visual Quality', value: result.visualQuality, icon: Eye, c: '#10b981' },
+            { label: 'Editing Quality', value: result.editingQuality, icon: Clock, c: '#ec4899' },
             { label: 'Emotional Impact', value: result.emotionalImpact, icon: TrendingUp, c: '#ef4444' },
-            { label: 'Competitor Benchmark', value: result.competitorBenchmark, icon: Target, c: '#fbbf24' },
-            { label: 'Content Uniqueness', value: result.contentUniqueness, icon: SparklesIcon, c: '#c084fc' },
-            { label: 'Safety Confidence', value: result.safetyScore, icon: Shield, c: '#10b981' }
+            { label: 'Competitor Benchmark', value: result.competitorBenchmark, icon: Target, c: '#f59e0b' },
+            { label: 'Content Uniqueness', value: result.contentUniqueness, icon: SparklesIcon, c: '#d946ef' },
+            { label: 'Safety Confidence', value: result.safetyScore, icon: Shield, c: '#14b8a6' }
           ].map(m => (
-            <div key={m.label} style={{
-              background: glassBg, border: glassBorder, borderRadius: 16, padding: 18,
-              backdropFilter: 'blur(16px)', display: 'flex', flexDirection: 'column', gap: 10
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <m.icon size={16} style={{ color: m.c ?? '#fff' }} />
-                <span style={{ fontWeight: 800, fontSize: 18, color: m.c }}>{m.value}%</span>
+            <div key={m.label} className="bg-white dark:bg-[#120E28]/70 border border-slate-200 dark:border-purple-500/20 rounded-xl p-4 flex flex-col gap-2.5 shadow-sm dark:shadow-none dark:backdrop-blur-md">
+              <div className="flex justify-between items-center">
+                <m.icon className="w-4 h-4" style={{ color: m.c }} />
+                <span className="font-extrabold text-[16px]" style={{ color: m.c }}>{m.value}%</span>
               </div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: '#e2e8f0' }}>{m.label}</div>
-              <div style={{ height: 4, borderRadius: 4, background: 'rgba(255,255,255,0.05)', overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${m.value}%`, background: m.c, borderRadius: 4 }} />
+              <div className="text-[12px] font-bold text-slate-700 dark:text-[#e2e8f0] leading-tight">{m.label}</div>
+              <div className="h-1.5 rounded-full bg-slate-100 dark:bg-white/5 overflow-hidden mt-0.5">
+                <div className="h-full rounded-full" style={{ width: `${m.value}%`, backgroundColor: m.c }} />
               </div>
             </div>
           ))}
         </div>
 
         {/* Virality Prediction Banner */}
-        <div style={{
-          marginTop: 16, background: 'linear-gradient(90deg, rgba(139,92,246,0.15), rgba(56,189,248,0.15))',
-          border: '1px solid rgba(139,92,246,0.4)', borderRadius: 16, padding: '24px 32px',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 20
-        }}>
+        <div className="mt-4 rounded-2xl p-6 sm:px-8 flex items-center justify-between flex-wrap gap-5 bg-gradient-to-r from-purple-500/10 to-sky-500/10 dark:from-[#8b5cf6]/15 dark:to-[#38bdf8]/15 border border-purple-500/20 dark:border-[#8b5cf6]/40">
           <div>
-            <div style={{ fontSize: 13, color: '#c4b5fd', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>
+            <div className="text-[13px] font-semibold uppercase tracking-wider mb-1.5 text-purple-600 dark:text-[#c4b5fd]">
               Final Viral Prediction
             </div>
-            <div style={{ fontSize: 28, fontWeight: 800, color: '#fff' }}>
+            <div className="text-[28px] font-extrabold text-[#4F46E5] dark:text-white mt-1">
               {result.viralityPrediction}
             </div>
           </div>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: 13, color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>
+          <div className="text-right">
+            <div className="text-[13px] font-semibold uppercase tracking-wider mb-1.5 text-slate-500 dark:text-[#94a3b8]">
               Virality Score
             </div>
-            <div style={{ fontSize: 36, fontWeight: 800, color: '#38bdf8', lineHeight: 1 }}>
-              {result.viralityScore}<span style={{ fontSize: 18, color: '#94a3b8' }}>/100</span>
+            <div className="text-[36px] font-extrabold text-[#38bdf8] leading-none">
+              {result.viralityScore}<span className="text-[18px] text-slate-400 dark:text-[#94a3b8]">/100</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* ── Scene-by-Scene Timeline ──────────────────────────────────────────── */}
-      <div style={{ marginBottom: 32 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
-          <Target size={18} style={{ color: '#a78bfa' }} />
-          <h2 style={{ fontWeight: 700, fontSize: 17 }}>Scene-by-Scene Intelligence Timeline</h2>
+      <div className="mb-8">
+        <div className="flex items-center gap-2.5 mb-5">
+          <Target className="w-[18px] h-[18px] text-purple-600 dark:text-[#a78bfa]" />
+          <h2 className="font-bold text-[17px] text-[#c4b5fd] dark:text-white">Scene-by-Scene Intelligence Timeline</h2>
         </div>
 
-        <div style={{
-          background: glassBg, border: glassBorder, borderRadius: 20, padding: '28px 28px',
-          backdropFilter: 'blur(16px)', boxShadow: '0 8px 32px rgba(0,0,0,0.4)'
-        }}>
-          <div style={{ position: 'relative' }}>
+        <div className="bg-white dark:bg-[#120E28]/70 border border-slate-200 dark:border-purple-500/20 rounded-3xl p-6 sm:p-8 shadow-sm dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] dark:backdrop-blur-md relative">
+          <div className="relative">
             {/* Glow spine */}
-            <div style={{
-              position: 'absolute', left: 24, top: 24, bottom: 24, width: 2,
-              background: 'linear-gradient(to bottom, rgba(139,92,246,0.6), rgba(56,189,248,0.15))',
-              boxShadow: '0 0 8px rgba(139,92,246,0.4)'
-            }} />
+            <div className="absolute left-6 top-6 bottom-6 w-0.5 bg-slate-200 dark:bg-gradient-to-b dark:from-purple-500/60 dark:to-sky-500/15 dark:shadow-[0_0_8px_rgba(139,92,246,0.4)]" />
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <div className="flex flex-col gap-6">
               {scenes.map((scene, idx) => {
                 const colors = getScoreColor(scene.viralityScore ?? scene.engagementScore)
                 const pillSt = getPillStyle(scene.recommendation)
                 const catStyle = getCategoryStyle(scene.category)
                 return (
-                  <div key={idx} style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
+                  <div key={idx} className="flex gap-4 sm:gap-6 items-start relative z-10">
                     {/* Virality score badge */}
-                    <div style={{
-                      width: 52, height: 52, borderRadius: '50%', flexShrink: 0,
-                      background: 'rgba(0,0,0,0.5)',
-                      border: `2px solid ${colors.border}`,
-                      boxShadow: `0 0 18px ${colors.glow}`,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      flexDirection: 'column', position: 'relative', zIndex: 1
-                    }}>
-                      <span style={{ fontWeight: 800, fontSize: 13, color: colors.text, lineHeight: 1 }}>{scene.viralityScore ?? scene.engagementScore}</span>
-                      <span style={{ fontSize: 8, color: '#7c3aed', fontWeight: 600, letterSpacing: '0.04em', marginTop: 2 }}>VIRAL</span>
+                    <div className="w-[50px] h-[50px] shrink-0 rounded-full bg-white dark:bg-[#0A0710] border-2 flex flex-col items-center justify-center relative z-10"
+                      style={{ borderColor: colors.border, boxShadow: `0 0 18px ${colors.glow}` }}>
+                      <span className="font-extrabold text-[15px] leading-none" style={{ color: colors.text }}>{scene.viralityScore ?? scene.engagementScore}</span>
+                      <span className="text-[9px] font-bold tracking-wider mt-0.5 text-purple-600 dark:text-[#a855f7]">VIRAL</span>
                     </div>
 
                     {/* Scene card */}
-                    <div style={{
-                      flex: 1, background: 'rgba(15,10,35,0.6)',
-                      border: '1px solid rgba(139,92,246,0.15)', borderRadius: 14, padding: '16px 20px'
-                    }}>
+                    <div className="flex-1 bg-white dark:bg-[#0F0A23]/60 border border-slate-200 dark:border-purple-500/15 rounded-[14px] p-4 sm:p-5 shadow-sm dark:shadow-none">
 
                       {/* Top row */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, flexWrap: 'wrap' }}>
-                        <span style={{
-                          fontWeight: 700, fontSize: 14, background: 'rgba(139,92,246,0.2)',
-                          border: '1px solid rgba(139,92,246,0.3)', borderRadius: 8, padding: '4px 12px',
-                          color: '#c4b5fd'
-                        }}>{scene.timestamp}</span>
-                        <span style={{
-                          fontWeight: 700, fontSize: 12, background: pillSt.bg, border: pillSt.border,
-                          borderRadius: 20, padding: '4px 14px', color: pillSt.color,
-                          letterSpacing: '0.05em', textTransform: 'uppercase' as const
-                        }}>{scene.recommendation}</span>
-                        <span style={{
-                          fontWeight: 700, fontSize: 11.5, background: catStyle.bg, border: catStyle.border,
-                          borderRadius: 20, padding: '3px 12px', color: catStyle.color,
-                          letterSpacing: '0.05em'
-                        }}>{scene.category}</span>
-                        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 5 }}>
-                          <Shield size={12} style={{ color: '#22c55e' }} />
-                          <span style={{ color: '#94a3b8', fontSize: 11.5 }}>Private · Secure</span>
+                      <div className="flex items-center gap-2.5 mb-3 flex-wrap">
+                        <span className="font-bold text-[14px] text-slate-800 dark:text-[#c4b5fd]">
+                          {scene.timestamp}
+                        </span>
+                        <span className="font-bold text-[11.5px] rounded-full px-3 py-1 tracking-wider uppercase border"
+                          style={{ background: pillSt.bg, borderColor: pillSt.border, color: pillSt.color }}>
+                          {scene.recommendation}
+                        </span>
+                        <div className="ml-auto flex items-center gap-1.5">
+                          <Shield className="w-3.5 h-3.5 text-[#22c55e]" />
+                          <span className="text-slate-500 dark:text-[#94a3b8] text-[11.5px] font-medium">Private · Secure</span>
                         </div>
                       </div>
 
                       {/* What Nova actually saw in this scene (real frame analysis) */}
                       {scene.sceneContent && (
-                        <div style={{
-                          display: 'flex', alignItems: 'flex-start', gap: 8,
-                          background: 'rgba(56,189,248,0.06)', border: '1px solid rgba(56,189,248,0.15)',
-                          borderRadius: 8, padding: '7px 12px', marginBottom: 8,
-                        }}>
-                          <span style={{ fontSize: 13, flexShrink: 0 }}>🎥</span>
-                          <span style={{ fontSize: 12.5, color: '#7dd3fc', lineHeight: 1.5 }}>
+                        <div className="flex items-start gap-2.5 bg-[#F0F9FF] dark:bg-[#38bdf8]/[0.06] border border-[#BAE6FD] dark:border-[#38bdf8]/15 rounded-lg py-2 px-3 mb-2.5">
+                          <span className="text-[14px] shrink-0">👥</span>
+                          <span className="text-[13px] text-slate-700 dark:text-[#7dd3fc] leading-snug font-medium">
                             {scene.sceneContent}
                           </span>
                         </div>
@@ -648,16 +562,12 @@ export default function VideoIntelligencePage() {
 
                       {/* Audio content — what was actually said in this scene */}
                       {scene.audioContent && scene.audioContent !== '[No audio transcript for this scene]' && (
-                        <div style={{
-                          display: 'flex', alignItems: 'flex-start', gap: 8,
-                          background: 'rgba(168,85,247,0.07)', border: '1px solid rgba(168,85,247,0.2)',
-                          borderRadius: 8, padding: '7px 12px', marginBottom: 8,
-                        }}>
-                          <span style={{ fontSize: 13, flexShrink: 0 }}>🎤</span>
+                        <div className="flex items-start gap-2.5 bg-[#F8FAFC] dark:bg-[#a855f7]/[0.07] border border-slate-200 dark:border-[#a855f7]/20 rounded-lg py-2 px-3 mb-2.5">
+                          <span className="text-[14px] shrink-0">🎤</span>
                           <div>
-                            <div style={{ fontSize: 10, color: '#a78bfa', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 3 }}>Spoken Audio</div>
-                            <span style={{ fontSize: 12.5, color: '#e9d5ff', lineHeight: 1.6, fontStyle: 'italic' }}>
-                              &ldquo;{scene.audioContent}&rdquo;
+                            <div className="text-[10px] text-slate-500 dark:text-[#a78bfa] font-bold tracking-wider uppercase mb-1">Spoken Audio</div>
+                            <span className="text-[13px] text-slate-600 dark:text-[#e9d5ff] leading-relaxed italic font-medium">
+                              "{scene.audioContent}"
                             </span>
                           </div>
                         </div>
@@ -665,26 +575,22 @@ export default function VideoIntelligencePage() {
 
                       {/* Audience review quote */}
                       {scene.audienceReview && (
-                        <div style={{
-                          fontSize: 13.5, color: '#c4b5fd', fontStyle: 'italic',
-                          background: 'rgba(139,92,246,0.07)', border: '1px solid rgba(139,92,246,0.15)',
-                          borderRadius: 8, padding: '8px 12px', marginBottom: 10, lineHeight: 1.6
-                        }}>
+                        <div className="text-[13.5px] italic text-slate-700 dark:text-[#c4b5fd] bg-[#F8FAFC] dark:bg-purple-500/[0.07] border border-slate-200 dark:border-purple-500/15 rounded-lg py-2.5 px-3.5 mb-3 leading-relaxed font-medium">
                           "{scene.audienceReview}"
                         </div>
                       )}
 
                       {/* Why it worked / failed */}
                       {scene.whyItWorked && (
-                        <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
-                          <span style={{ fontSize: 12, color: '#4ade80', flexShrink: 0 }}>✓</span>
-                          <span style={{ fontSize: 13, color: '#86efac', lineHeight: 1.5 }}>{scene.whyItWorked}</span>
+                        <div className="flex gap-2 mb-2 items-start">
+                          <span className="text-[13px] text-[#22c55e] shrink-0 font-bold">✓</span>
+                          <span className="text-[13px] text-[#166534] dark:text-[#86efac] leading-snug font-medium">{scene.whyItWorked}</span>
                         </div>
                       )}
                       {scene.whyItFailed && (
-                        <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
-                          <span style={{ fontSize: 12, color: '#f87171', flexShrink: 0 }}>✗</span>
-                          <span style={{ fontSize: 13, color: '#fca5a5', lineHeight: 1.5 }}>{scene.whyItFailed}</span>
+                        <div className="flex gap-2 mb-2 items-start">
+                          <span className="text-[13px] text-[#ef4444] shrink-0 font-bold">✗</span>
+                          <span className="text-[13px] text-[#991b1b] dark:text-[#fca5a5] leading-snug font-medium">{scene.whyItFailed}</span>
                         </div>
                       )}
 
