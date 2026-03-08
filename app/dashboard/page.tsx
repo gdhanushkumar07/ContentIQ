@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { motion } from 'framer-motion'
-import { ChevronLeft, ChevronRight, Clock, Sparkles, FileText, Share2, Shield, Mic, Image as ImageIcon, Music, TrendingUp, Zap, Lock } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Clock, Sparkles, FileText, Share2, Shield, Mic, Image as ImageIcon, Music, TrendingUp, Zap, Lock, Globe } from 'lucide-react'
 import Link from 'next/link'
 import { VideoAIIcon } from '@/components/icons/VideoAIIcon'
 import { useRecentActivity, formatTimeAgo } from '@/lib/useRecentActivity'
@@ -15,6 +15,7 @@ const quickAccessItems = [
   { label: 'Distribution', icon: Share2, color: 'text-[#10b981]', href: '/dashboard/distribution' },
   { label: 'Privacy Filter', icon: Shield, color: 'text-[#fbbf24]', href: '/dashboard/privacy-filter' },
   { label: 'Voice Tracker', icon: Mic, color: 'text-[#f43f5e]', href: '/dashboard/voice-tracker' },
+  { label: 'Multilingual Dubbing', icon: Globe, color: 'text-[#6366f1]', href: '/dashboard/translator' },
   { label: 'Thumbnail Analyzer', icon: ImageIcon, color: 'text-[#06b6d4]', href: '/dashboard/thumbnail-analyzer' },
   { label: 'BGM Suggestor', icon: Music, color: 'text-[#ec4899]', href: '/dashboard/bgm-suggestor' },
 ]

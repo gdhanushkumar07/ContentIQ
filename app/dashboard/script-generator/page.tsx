@@ -129,7 +129,7 @@ export default function ScriptGeneratorPage() {
           </div>
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Trend-to-Script</h1>
-            <p className="text-sm text-slate-500 dark:text-gray-400">High-retention video blueprints following a strict 1:450 word ratio</p>
+            <p className="text-sm text-slate-500 dark:text-gray-400">Create engaging video scripts designed around your tone, niche, and timing.</p>
           </div>
         </div>
       </motion.div>

@@ -270,7 +270,7 @@ export default function VideoIntelligencePage() {
           <div>
             <h1 className="text-[22px] font-bold tracking-tight text-slate-900 dark:text-white">Video Intelligence</h1>
             <p className="text-[13px] font-medium text-slate-500 dark:text-[#A1A1AA]">
-              Pre-posting private evaluation — 10-stage AWS-native analysis
+              Pre-posting private evaluation — 9-stage AWS-native analysis
             </p>
           </div>
         </div>
