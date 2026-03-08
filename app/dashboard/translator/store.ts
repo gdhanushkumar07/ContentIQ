@@ -6,6 +6,8 @@ export interface TranslationResult {
     warning?: string;
 }
 
+import { addRecentActivity } from '@/lib/useRecentActivity';
+
 export interface State {
     file: File | null;
     inputMode: "file" | "text";
@@ -119,6 +121,7 @@ export async function translateContent() {
         }
 
         store.setState({ result: data });
+        addRecentActivity('Multilingual Dubbing', s.inputMode === 'file' && s.file ? s.file.name : `Text to ${s.targetLang}`);
     } catch (err: any) {
         store.setState({ error: err.message });
     } finally {

@@ -110,7 +110,7 @@ export async function generateBgm() {
             extractedText: data.extractedText || "No text could be extracted.",
             suggestions: data.suggestions ? data.suggestions : []
         });
-        addRecentActivity('BGM suggested', s.file ? s.file.name : 'Text input');
+        addRecentActivity('BGM Suggestor', s.file ? s.file.name : 'Text input');
     } catch (err: any) {
         console.error(err);
         store.setState({

@@ -91,7 +91,7 @@ export async function generateScript() {
 
         if (res.ok && result.results) {
             store.setState({ data: result, phase: 'results' });
-            addRecentActivity('Script generated', s.topic);
+            addRecentActivity('Script Generator', s.topic);
         } else {
             throw new Error(result.details || result.error || 'Failed to generate script');
         }

@@ -226,7 +226,7 @@ export async function startVideoAnalysis(file: File) {
         store.setState({ stage: 8 });
         await new Promise(r => setTimeout(r, 600));
         store.setState({ result: dataAnalyze, stage: 9 });
-        addRecentActivity('Video analyzed', file.name);
+        addRecentActivity('Video Intelligence', file.name);
 
     } catch (err) {
         store.setState({ error: 'Analysis error: ' + String(err), stage: 0 });

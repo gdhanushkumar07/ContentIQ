@@ -49,19 +49,9 @@ export const useRecentActivity = () => {
                     console.error(e);
                 }
             } else {
-                // Default mock data when localstorage is empty
-                const defaultActivities = [
-                    { action: 'Video analyzed', subject: 'product-launch-v2.mp4', time: new Date(Date.now() - 120000).toISOString() },
-                    { action: 'Script generated', subject: 'Tech Review — LinkedIn', time: new Date(Date.now() - 3600000).toISOString() },
-                    { action: 'Published to 8 platforms', subject: 'Behind the Scenes Reel', time: new Date(Date.now() - 10800000).toISOString() },
-                    { action: 'Privacy filter applied', subject: 'interview-raw.mp4', time: new Date(Date.now() - 86400000).toISOString() },
-                    { action: 'BGM suggested', subject: 'Product Walk-through', time: new Date(Date.now() - 86400000).toISOString() },
-                    { action: 'Thumbnail analyzed', subject: 'thumbnail-v1.png', time: new Date(Date.now() - 2 * 86400000).toISOString() },
-                    { action: 'Script generated', subject: 'Company Update', time: new Date(Date.now() - 2 * 86400000).toISOString() },
-                    { action: 'Voice tracked', subject: 'voiceover-v3.mp3', time: new Date(Date.now() - 3 * 86400000).toISOString() },
-                ];
-                setActivities(defaultActivities);
-                localStorage.setItem('contentIQ_recentActivities', JSON.stringify(defaultActivities));
+                // Return empty list if no localstorage data exists
+                setActivities([]);
+                localStorage.setItem('contentIQ_recentActivities', JSON.stringify([]));
             }
         }
     };
@@ -106,15 +96,6 @@ export const addRecentActivity = (action: string, subject: string) => {
     let currentActivities: ActivityItem[] = [];
     if (stored) {
         try { currentActivities = JSON.parse(stored); } catch (e) { }
-    } else {
-        // Fallback for standalone
-        currentActivities = [
-            { action: 'Video analyzed', subject: 'product-launch-v2.mp4', time: new Date(Date.now() - 120000).toISOString() },
-            { action: 'Script generated', subject: 'Tech Review — LinkedIn', time: new Date(Date.now() - 3600000).toISOString() },
-            { action: 'Published to 8 platforms', subject: 'Behind the Scenes Reel', time: new Date(Date.now() - 10800000).toISOString() },
-            { action: 'Privacy filter applied', subject: 'interview-raw.mp4', time: new Date(Date.now() - 86400000).toISOString() },
-            { action: 'BGM suggested', subject: 'Product Walk-through', time: new Date(Date.now() - 86400000).toISOString() },
-        ];
     }
 
     const updated = [newActivity, ...currentActivities].slice(0, 50);

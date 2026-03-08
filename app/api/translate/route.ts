@@ -126,19 +126,17 @@ export async function POST(req: Request) {
 
     // 3. Audio: Text-to-Speech (ElevenLabs)
     // The `eleven_multilingual_v2` model automatically detects and speaks the correct language!
+    // Replace custom voices with standard, pre-made voices that work on all API keys
     const elevenLabsVoicesList = [
       { id: "21m00Tcm4TlvDq8ikWAM", name: "Rachel", gender: "female", age: "young", tone: "narration" },
       { id: "29vD33N1CtxCmqQRPOHJ", name: "Drew", gender: "male", age: "middle aged", tone: "news" },
       { id: "2EiwWnXFnvU5JabPnv8n", name: "Clyde", gender: "male", age: "middle aged", tone: "conversational" },
       { id: "D38z5RcWu1voky8WS1ja", name: "Fin", gender: "male", age: "old", tone: "characters" },
-      { id: "CYw3kZ02vU0ksE1OqH1m", name: "Dave", gender: "male", age: "young", tone: "conversational" },
-      { id: "EXAVITQu4vr4xnSDxMaL", name: "Bella", gender: "female", age: "young", tone: "narration" },
       { id: "ErXwobaYiN019PkyZkXJ", name: "Antoni", gender: "male", age: "young", tone: "narration" },
       { id: "GBv7mTt0atIp3Br8iCZE", name: "Thomas", gender: "male", age: "young", tone: "conversational" },
       { id: "IKne3meq5aSn9XLyUdCD", name: "Charlie", gender: "male", age: "middle aged", tone: "conversational" },
       { id: "LcfcDJNUP1GQmXneznwW", name: "Emily", gender: "female", age: "young", tone: "narration" },
       { id: "MF3mGyEYCl7XYWbV9V6O", name: "Elli", gender: "female", age: "young", tone: "narration" },
-      { id: "N2lVS1w4EXbQ1uI1Hn2O", name: "Callum", gender: "male", age: "middle aged", tone: "characters" },
       { id: "ODq5zmih8GrVes37Dizd", name: "Patrick", gender: "male", age: "middle aged", tone: "characters" },
       { id: "SOYHLrjzK2X1ezoOCnDcg", name: "Harry", gender: "male", age: "young", tone: "conversational" },
       { id: "AZnzlk1XvdvUeBnXmlld", name: "Domi", gender: "female", age: "young", tone: "narration" },
@@ -146,7 +144,6 @@ export async function POST(req: Request) {
       { id: "VR6AewLTigWG4xSOukaG", name: "Sam", gender: "male", age: "young", tone: "narration" },
       { id: "pNInz6obpgDQGcFmaJgB", name: "Adam", gender: "male", age: "middle aged", tone: "narration" },
       { id: "z9fAnlkpzviPz146aGWa", name: "Glinda", gender: "female", age: "middle aged", tone: "characters" },
-      { id: "zcAOhNBS3c14rBihafp1", name: "Freya", gender: "female", age: "young", tone: "characters" },
       { id: "XrExE9yKIg1WjnnlVkGX", name: "Matilda", gender: "female", age: "middle aged", tone: "narration" }
     ];
 
@@ -158,10 +155,10 @@ export async function POST(req: Request) {
 
     if (!hasCustomSettings) {
       const simpleMap: Record<string, string> = {
-        fr: "2EiwWnXFnvU5JabPnv8n",
-        de: "D38z5RcWu1voky8WS1ja",
-        es: "21m00Tcm4TlvDq8ikWAM",
-        it: "29vD33N1CtxCmqQRPOHJ",
+        fr: "2EiwWnXFnvU5JabPnv8n", // Clyde (Male, Conversational)
+        de: "D38z5RcWu1voky8WS1ja", // Fin (Male, Old)
+        es: "21m00Tcm4TlvDq8ikWAM", // Rachel (Female, Young)
+        it: "29vD33N1CtxCmqQRPOHJ", // Drew (Male, Middle Aged)
       };
       const langPrefix = targetLanguage.split('-')[0]; // Handle cases like 'en-US'
       bestVoiceId = simpleMap[targetLanguage] || simpleMap[langPrefix] || "21m00Tcm4TlvDq8ikWAM";
