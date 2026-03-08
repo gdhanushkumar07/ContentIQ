@@ -1,3 +1,5 @@
+import { addRecentActivity } from '@/lib/useRecentActivity';
+
 export interface State {
     topic: string;
     tone: string;
@@ -89,6 +91,7 @@ export async function generateScript() {
 
         if (res.ok && result.results) {
             store.setState({ data: result, phase: 'results' });
+            addRecentActivity('Script generated', s.topic);
         } else {
             throw new Error(result.details || result.error || 'Failed to generate script');
         }

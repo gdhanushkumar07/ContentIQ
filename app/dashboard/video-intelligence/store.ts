@@ -1,4 +1,5 @@
 'use client'
+import { addRecentActivity } from '@/lib/useRecentActivity';
 
 import { useState, useEffect } from 'react';
 
@@ -172,6 +173,13 @@ export async function startVideoAnalysis(file: File) {
 
     try {
         const durationSeconds = await readVideoDuration(file)
+
+        // Enforce 3-minute limit
+        if (durationSeconds > 180) {
+            store.setState({ error: 'DURATION_EXCEEDED', stage: 0 });
+            return;
+        }
+
         const sampleCount = 18; // Exactly 18 frames as requested
         const timestamps = Array.from({ length: sampleCount }, (_, i) =>
             Math.max(0, Number(((i / (sampleCount - 1)) * Math.max(0, durationSeconds - 0.1)).toFixed(2)))
@@ -218,6 +226,7 @@ export async function startVideoAnalysis(file: File) {
         store.setState({ stage: 8 });
         await new Promise(r => setTimeout(r, 600));
         store.setState({ result: dataAnalyze, stage: 9 });
+        addRecentActivity('Video analyzed', file.name);
 
     } catch (err) {
         store.setState({ error: 'Analysis error: ' + String(err), stage: 0 });

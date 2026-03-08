@@ -1,3 +1,5 @@
+import { addRecentActivity } from '@/lib/useRecentActivity';
+
 export const DUMMY_SUGGESTIONS = [
     { title: 'Epic Sunrise', genre: 'Cinematic', bpm: 78, mood: 'Uplifting', match: '97%', duration: '3:12' },
     { title: 'Future Pulse', genre: 'Electronic', bpm: 128, mood: 'Energetic', match: '94%', duration: '2:48' },
@@ -108,6 +110,7 @@ export async function generateBgm() {
             extractedText: data.extractedText || "No text could be extracted.",
             suggestions: data.suggestions ? data.suggestions : []
         });
+        addRecentActivity('BGM suggested', s.file ? s.file.name : 'Text input');
     } catch (err: any) {
         console.error(err);
         store.setState({

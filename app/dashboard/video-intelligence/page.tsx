@@ -345,7 +345,14 @@ export default function VideoIntelligencePage() {
           <button onClick={() => fileInputRef.current?.click()} className="px-10 py-3.5 dark:py-3 text-white text-[15px] dark:text-sm font-semibold rounded-full transition-transform hover:scale-105 active:scale-95 shadow-[0_12px_24px_rgba(91,33,182,0.3)] dark:shadow-purple-500/20 bg-gradient-to-r from-[#6D28D9] to-[#4F46E5] dark:bg-transparent dark:glow-btn">
             Start Private Analysis
           </button>
-          {error && <p style={{ color: '#f87171', fontSize: 13, marginTop: 16 }}>{error}</p>}
+          <br />
+          <p
+            className={`text-[14px] dark:text-sm mb-2 leading-relaxed font-medium dark:font-normal transition-colors duration-300 ${error === 'DURATION_EXCEEDED' ? 'text-red-500 font-bold dark:text-red-400' : 'text-slate-600 dark:text-[#A1A1AA]'}`}
+            style={{ maxWidth: 520 }}
+          >
+            The video analysis feature currently supports videos with a maximum duration of <b className={error === 'DURATION_EXCEEDED' ? 'text-red-600 dark:text-red-500' : ''}>3 minutes</b>.
+          </p>
+          {error && error !== 'DURATION_EXCEEDED' && <p style={{ color: '#f87171', fontSize: 13, marginTop: 16 }}>{error}</p>}
         </div>
 
         {/* Feature cards */}

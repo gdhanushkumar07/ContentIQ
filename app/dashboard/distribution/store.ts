@@ -1,3 +1,5 @@
+import { addRecentActivity } from '@/lib/useRecentActivity';
+
 export interface PlatformContent {
     content: string;
     hashtags: string[];
@@ -111,6 +113,7 @@ export async function generateDistributionPlan() {
 
         const data = await response.json();
         store.setState({ plan: data });
+        addRecentActivity('Published to multiple platforms', s.title);
     } catch (err: any) {
         store.setState({ error: err.message || "An unexpected error occurred." });
     } finally {
