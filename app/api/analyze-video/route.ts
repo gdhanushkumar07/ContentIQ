@@ -240,56 +240,143 @@ Return ONLY valid JSON:
   ]
 }`;
 
-        // ─── Promise 1: Audio Transcription (AWS Transcribe SDK) ───
+        // ─── Promise 1: Audio Transcription (Hybrid Architecture) ───
         const transcribePromise = (async () => {
             try {
-                console.log(`[Parallel] Starting native AWS Transcribe job for ${s3Key}`);
-                const transcribeClient = new TranscribeClient({
-                    region: "us-east-1",
-                    credentials: {
-                        accessKeyId: process.env.MY_AWS_ACCESS_KEY_ID!,
-                        secretAccessKey: process.env.MY_AWS_SECRET_ACCESS_KEY!,
-                    },
-                });
+                if (realDuration <= 90) {
+                    console.log(`[Parallel] Starting native AWS Transcribe job for ${s3Key} (Duration: ${realDuration}s <= 90s)`);
+                    const transcribeClient = new TranscribeClient({
+                        region: "us-east-1",
+                        credentials: {
+                            accessKeyId: process.env.MY_AWS_ACCESS_KEY_ID!,
+                            secretAccessKey: process.env.MY_AWS_SECRET_ACCESS_KEY!,
+                        },
+                    });
 
-                const mediaUri = `s3://${bucket}/${s3Key}`;
-                const jobName = `vid-intel-transcribe-${Date.now()}`;
+                    const mediaUri = `s3://${bucket}/${s3Key}`;
+                    const jobName = `vid-intel-transcribe-${Date.now()}`;
 
-                await transcribeClient.send(new StartTranscriptionJobCommand({
-                    TranscriptionJobName: jobName,
-                    Media: { MediaFileUri: mediaUri },
-                    LanguageCode: "en-US",
-                }));
-
-                let jobStatus = "IN_PROGRESS";
-                let transcriptUri = "";
-                while (jobStatus === "IN_PROGRESS" || jobStatus === "QUEUED") {
-                    await new Promise((resolve) => setTimeout(resolve, 3000));
-                    const st = await transcribeClient.send(new GetTranscriptionJobCommand({
-                        TranscriptionJobName: jobName
+                    await transcribeClient.send(new StartTranscriptionJobCommand({
+                        TranscriptionJobName: jobName,
+                        Media: { MediaFileUri: mediaUri },
+                        LanguageCode: "en-US",
                     }));
-                    jobStatus = st.TranscriptionJob?.TranscriptionJobStatus || "FAILED";
 
-                    if (jobStatus === "COMPLETED") {
-                        transcriptUri = st.TranscriptionJob?.Transcript?.TranscriptFileUri || "";
-                    }
-                    if (jobStatus === "FAILED" || jobStatus === "ERROR") {
-                        console.warn("[Parallel] Transcription job failed:", st.TranscriptionJob?.FailureReason);
-                        return;
-                    }
-                }
+                    let jobStatus = "IN_PROGRESS";
+                    let transcriptUri = "";
+                    while (jobStatus === "IN_PROGRESS" || jobStatus === "QUEUED") {
+                        await new Promise((resolve) => setTimeout(resolve, 3000));
+                        const st = await transcribeClient.send(new GetTranscriptionJobCommand({
+                            TranscriptionJobName: jobName
+                        }));
+                        jobStatus = st.TranscriptionJob?.TranscriptionJobStatus || "FAILED";
 
-                if (transcriptUri) {
-                    const transcriptRes = await fetch(transcriptUri);
-                    const transcriptData = await transcriptRes.json();
-                    const text = transcriptData.results?.transcripts?.[0]?.transcript || "";
-                    if (text) {
-                        spokenTranscript = text;
-                        console.log(`[Parallel] Transcribed audio successfully (${spokenTranscript.length} chars)`);
+                        if (jobStatus === "COMPLETED") {
+                            transcriptUri = st.TranscriptionJob?.Transcript?.TranscriptFileUri || "";
+                        }
+                        if (jobStatus === "FAILED" || jobStatus === "ERROR") {
+                            console.warn("[Parallel] Transcription job failed:", st.TranscriptionJob?.FailureReason);
+                            return;
+                        }
                     }
+
+                    if (transcriptUri) {
+                        const transcriptRes = await fetch(transcriptUri);
+                        const transcriptData = await transcriptRes.json();
+
+                        // Need to rebuild exact expected semantic structure: [ { start, end, text } ]
+                        const items = transcriptData.results?.items || [];
+                        const formattedTranscriptList = [];
+                        let currentSegmentText = "";
+                        let currentSegmentStart = 0;
+                        let currentSegmentEnd = 0;
+
+                        if (items.length > 0) {
+                            for (let i = 0; i < items.length; i++) {
+                                const item = items[i];
+                                if (item.type === "pronunciation") {
+                                    const start = parseFloat(item.start_time);
+                                    const end = parseFloat(item.end_time);
+                                    const text = item.alternatives[0].content;
+
+                                    if (currentSegmentText === "") {
+                                        currentSegmentStart = start;
+                                        currentSegmentEnd = end;
+                                        currentSegmentText = text;
+                                    } else {
+                                        currentSegmentEnd = end;
+                                        currentSegmentText += " " + text;
+                                    }
+
+                                    // Break into ~3 second chunks or at punctuation
+                                    if (end - currentSegmentStart >= 3.0 || item.alternatives[0].content.match(/[.!?,]/)) {
+                                        formattedTranscriptList.push({
+                                            start: currentSegmentStart,
+                                            end: currentSegmentEnd,
+                                            text: currentSegmentText.trim()
+                                        });
+                                        currentSegmentText = "";
+                                    }
+                                } else if (item.type === "punctuation") {
+                                    currentSegmentText += item.alternatives[0].content;
+                                    if (formattedTranscriptList.length > 0 && currentSegmentText === item.alternatives[0].content) {
+                                        formattedTranscriptList[formattedTranscriptList.length - 1].text += item.alternatives[0].content;
+                                        currentSegmentText = "";
+                                    }
+                                }
+                            }
+
+                            // Push remainder
+                            if (currentSegmentText !== "") {
+                                formattedTranscriptList.push({
+                                    start: currentSegmentStart,
+                                    end: currentSegmentEnd,
+                                    text: currentSegmentText.trim()
+                                });
+                            }
+                        }
+
+                        if (formattedTranscriptList.length > 0) {
+                            spokenTranscript = JSON.stringify(formattedTranscriptList);
+                            console.log(`[Parallel] AWS Transcribe successful (${formattedTranscriptList.length} segments)`);
+                        }
+                    }
+                } else {
+                    console.log(`[Parallel] Starting Local Faster-Whisper pipeline for ${s3Key} (Duration: ${realDuration}s > 90s)`);
+                    const { execFile } = require('child_process');
+                    const path = require('path');
+
+                    // Spawn the python script using the presigned URL
+                    const scriptPath = path.join(process.cwd(), 'lib', 'transcribe.py');
+                    const venvPythonPath = path.join(process.cwd(), '.venv', 'bin', 'python');
+
+                    await new Promise<void>((resolve, reject) => {
+                        execFile(venvPythonPath, [scriptPath, presignedUrl], { maxBuffer: 1024 * 1024 * 10 }, (error: any, stdout: string, stderr: string) => {
+                            if (error) {
+                                console.error('[Parallel] Faster-Whisper error:', error);
+                                console.error('[Parallel] stderr:', stderr);
+                                reject(error);
+                            } else {
+                                try {
+                                    const segments = JSON.parse(stdout);
+                                    if (Array.isArray(segments) && segments.length > 0) {
+                                        spokenTranscript = JSON.stringify(segments);
+                                        console.log(`[Parallel] Local Faster-Whisper successful (${segments.length} segments)`);
+                                    } else {
+                                        console.warn('[Parallel] Faster-Whisper returned empty JSON segment array.');
+                                    }
+                                    resolve();
+                                } catch (parseError) {
+                                    console.error('[Parallel] Failed to parse JSON from python script:', parseError);
+                                    console.error('[Parallel] raw output:', stdout.slice(0, 500));
+                                    reject(parseError);
+                                }
+                            }
+                        });
+                    });
                 }
             } catch (err) {
-                console.error("[Parallel] Failed native block transcribing:", err);
+                console.error("[Parallel] Failed transcription block:", err);
             }
         })();
 
@@ -443,26 +530,38 @@ Return ONLY valid JSON:
         // ════════════════════════════════════════════════════════════════════
         // STAGE 6 — Human-Like Review & Reshoot Direction
         // ════════════════════════════════════════════════════════════════════
+        let parsedTranscript: { start: number, end: number, text: string }[] = [];
+        try {
+            parsedTranscript = JSON.parse(spokenTranscript);
+        } catch (e) { }
+
+        const getSceneText = (sceneStart: number, sceneEnd: number) => {
+            if (!Array.isArray(parsedTranscript) || parsedTranscript.length === 0) return "";
+            const texts = parsedTranscript
+                .filter(t => (t.start < sceneEnd && t.end > sceneStart))
+                .map(t => t.text);
+            return texts.join(" ");
+        };
+
+        finalGroupedScenes.forEach(scene => {
+            (scene as any).actualAudioContent = getSceneText(scene.start, scene.end) || "[No audio detected]";
+        });
+
         const reviewPrompt = `You are simultaneously a real viewer AND a professional video director reviewing a creator's video.
-The full video transcript is provided. For each scene, extract the approximate spoken words that fall within its timestamp range.
+CRITICAL INSTRUCTION: The video has been divided into ${finalGroupedScenes.length} scenes. You MUST evaluate ALL ${finalGroupedScenes.length} scenes in your output. Do not skip or truncate any scenes!
 
 For each scene below, write:
-1. AUDIO CONTENT — The specific words/sentences spoken during this scene's timestamp. Extract directly from the transcript below. If none, or if the transcript is empty, write "[Transcription unavailable (API quota exceeded or no audio detected)]"
-2. An AUDIENCE REVIEW — 1–2 sentences written in first-person viewer voice ("I felt...", "This part made me...")
-3. WHY IT WORKED — if the engagement score is >= 65, explain what made it work (1 sentence). Otherwise "null".
-4. WHY IT FAILED — if the engagement score is < 65, explain what caused disengagement (1 sentence). Otherwise "null".
-5. VIRALITY SCORE — A score from 0-100 for this specific scene based on its hook potential, emotional resonance, shareability, and uniqueness.
-6. A DETAILED RESHOOT GUIDE with fields: delivery (specific tone/phrasing guidance), visual (camera & light direction), script (alternative script suggestion or improvement), duration (timing advice), pacing (cut speed and rhythm advice), emotion (target emotional state to convey), musicSuggestion (specific music genre or instrument recommendation for background).
+1. An AUDIENCE REVIEW — 1–2 sentences written in first-person viewer voice ("I felt...", "This part made me...")
+2. WHY IT WORKED — if the engagement score is >= 65, explain what made it work (1 sentence). Otherwise "null".
+3. WHY IT FAILED — if the engagement score is < 65, explain what caused disengagement (1 sentence). Otherwise "null".
+4. VIRALITY SCORE — A score from 0-100 for this specific scene based on its hook potential, emotional resonance, shareability, and uniqueness.
+5. A DETAILED RESHOOT GUIDE with fields: delivery (specific tone/phrasing guidance), visual (camera & light direction), script (alternative script suggestion or improvement), duration (timing advice), pacing (cut speed and rhythm advice), emotion (target emotional state to convey), musicSuggestion (specific music genre or instrument recommendation for background).
 
-Full Video Transcript:
-"""${spokenTranscript}"""
-
-Scenes with engagement data:
+Scenes with engagement data and exactly spoken audio:
 ${JSON.stringify(finalGroupedScenes.map((s: any) => ({
             sceneId: s.sceneId,
             timestamp: `${fmt(s.start)}–${fmt(s.end)}`,
-            startSec: s.start,
-            endSec: s.end,
+            audioSpoken: s.actualAudioContent,
             engagementScore: s.engagementScore,
             category: s.category,
             visualContent: s.sceneContent
@@ -473,7 +572,6 @@ Return ONLY valid JSON (matching this schema perfectly):
   "scenes": [
     {
       "sceneId": "S1",
-      "audioContent": "Welcome to today’s review. I’m going to show you why...",
       "viralityScore": 82,
       "audienceReview": "I was immediately hooked by the confident opening.",
       "whyItWorked": "The strong opening statement and direct eye contact created instant trust.",
@@ -498,7 +596,7 @@ Return ONLY valid JSON (matching this schema perfectly):
         );
 
         interface ReviewScene {
-            sceneId: string; audioContent: string; viralityScore: number;
+            sceneId: string; viralityScore: number;
             audienceReview: string; whyItWorked: string | null; whyItFailed: string | null;
             reshootGuide: {
                 delivery: string; visual: string; script: string; duration: string;
@@ -512,7 +610,6 @@ Return ONLY valid JSON (matching this schema perfectly):
         const reviewData = safeJson<{ scenes: ReviewScene[] }>(reviewRaw, {
             scenes: finalGroupedScenes.map(s => ({
                 sceneId: s.sceneId,
-                audioContent: "[Audio not transcribed for this scene]",
                 viralityScore: Math.min(100, Math.max(0, Math.round(s.engagementScore * 1.1))),
                 audienceReview: s.engagementScore >= 65 ? "This section held my attention." : "I lost focus here.",
                 whyItWorked: s.engagementScore >= 65 ? "Good pacing kept engagement up." : null,
@@ -531,7 +628,6 @@ Return ONLY valid JSON (matching this schema perfectly):
 
         console.log("=== PARSED REVIEW DATA ===");
         console.log(`Review scenes count: ${reviewData.scenes.length}`);
-        reviewData.scenes.forEach(r => console.log(`  ${r.sceneId}: audio=${r.audioContent?.substring(0, 60)}...`));
 
         const reviewMap = new Map(reviewData.scenes.map(r => [r.sceneId, r]));
         console.log(`Review map keys: ${Array.from(reviewMap.keys()).join(', ')}`);
@@ -552,7 +648,7 @@ Return ONLY valid JSON (matching this schema perfectly):
                 category: scene.category,
                 recommendation: scene.recommendation,
                 sceneContent: scene.sceneContent,
-                audioContent: review?.audioContent ?? "[Transcription unavailable (API quota exceeded or no audio detected)]",
+                audioContent: (scene as any).actualAudioContent, // Guarantee transcription shows uniformly across all timestamps
                 audienceReview: review?.audienceReview ?? "",
                 whyItWorked: review?.whyItWorked ?? null,
                 whyItFailed: review?.whyItFailed ?? null,
