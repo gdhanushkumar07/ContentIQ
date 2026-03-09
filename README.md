@@ -6,14 +6,12 @@ ContentIQ is a comprehensive AI-powered platform designed to transform raw video
 
 Key Features
 
-* **Video Intelligence Pipeline**: Automated frame-level scene detection and audio transcription utilizing local Faster-Whisper and AWS Lambda Transcribe integration.
+* **Video Intelligence Pipeline**: Automated frame-level scene detection and audio transcription utilizing AWS Lambda Transcribe integration.
 * **Script Generator**: AI-driven script writing featuring a Predicted Performance Matrix to optimize viewer retention and engagement metrics.
 * **Universal Translator & Multilingual Dubbing**: Seamless text-to-text translation and text-to-audio AI dubbing algorithms to globalize your content.
 * **BGM Suggestor**: Automated context-aware background music generation and reliable high-quality audio downloads.
 * **Social Distribution**: Automatically generate platform-tailored social media copy and share seamlessly directly to networks like X (Twitter) and Facebook.
-* **Thumbnail Analyzer**: AI evaluation of video thumbnails to predict and maximize click-through rates (CTR).
-* **Privacy Filter**: Automated visual detection and redaction of sensitive personally identifiable information (PII) to ensure compliance.
-* **Voice Tracker**: Advanced voice cloning and tracking capabilities.
+
 
 Tech Stack
 
@@ -26,8 +24,6 @@ Tech Stack
   * AWS Rekognition (Image/Video Analysis)
   * AWS Transcribe, Translate & Polly
   * ElevenLabs (Advanced Text-to-Speech)
-  * Local `Faster-Whisper` pipeline
-  *Media Processing**: `fluent-ffmpeg`
 
 Installation
 
